@@ -55,6 +55,14 @@ powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 down 1
 powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 version
 ```
 
+After `up`, the database contains demo seed data from `000002_seed_demo_data`:
+
+- `100` placeholder images from `placehold.co`
+- `20` readable tags such as `nature`, `travel`, `food`, `city`
+- `1-5` tags attached to each seeded image
+
+Seed tags are inserted with `INSERT IGNORE`, so existing tags like `travel` or `food` are reused instead of causing unique-key conflicts. `down 1` removes seeded images and image-tag assignments, but it does not remove the readable tag catalog because those tags may already belong to other app data.
+
 ## Run
 
 Run from `backend/`:
