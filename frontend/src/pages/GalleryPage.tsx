@@ -54,19 +54,19 @@ function ImageCard({
             className="h-full w-full object-cover"
             loading="lazy"
           />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink/70 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-paper">
-            <div className="min-w-0">
-              <p className="truncate font-display text-lg leading-none">
-                {image.alt_text || `Frame ${image.id}`}
-              </p>
-              <p className="mt-1 text-xs uppercase tracking-[0.3em] text-paper/75">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3 space-y-2 text-paper">
+            <p className="truncate font-display text-lg leading-none">
+              {image.alt_text || `Frame ${image.id}`}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs uppercase tracking-[0.3em] text-paper/78">
                 {image.width && image.height ? `${image.width} x ${image.height}` : 'Open format'}
               </p>
+              <span className="max-w-full truncate rounded-full border border-white/40 bg-white/78 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-ink backdrop-blur-xl">
+                {image.source || 'gallery'}
+              </span>
             </div>
-            <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-paper/90 backdrop-blur">
-              {image.source || 'gallery'}
-            </span>
           </div>
         </div>
         <div className="space-y-4 p-4">
@@ -76,10 +76,11 @@ function ImageCard({
                 key={`${image.id}-${tag.id}`}
                 type="button"
                 onClick={() => onTagSelect(tag.slug)}
-                className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] transition ${selectedTag === tag.slug
-                    ? 'border-transparent bg-ink text-paper'
-                    : 'border-stone-300/80 bg-stone-100 text-stone-700 hover:border-clay/30 hover:text-clay'
-                  }`}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition ${
+                  selectedTag === tag.slug
+                    ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
+                    : 'border-black/10 bg-white/92 text-stone-700 hover:border-clay/30 hover:text-clay'
+                }`}
               >
                 #{tag.slug}
               </button>
@@ -347,7 +348,7 @@ export default function GalleryPage() {
           {isMobileMenuOpen ? (
             <div
               id="mobile-gallery-menu"
-              className="mt-4 max-h-[calc(100vh-7rem)] space-y-4 overflow-y-auto rounded-[1.75rem] border border-stone-900/10 bg-paper/95 p-4 shadow-[0_28px_48px_rgba(21,19,18,0.18)]"
+              className="mt-4 max-h-[calc(100vh-7rem)] space-y-4 overflow-y-auto rounded-[1.75rem] border border-black/5 bg-white/95 p-4 shadow-[0_24px_54px_rgba(0,0,0,0.12)]"
             >
               <Link
                 to="/manage"
@@ -378,8 +379,8 @@ export default function GalleryPage() {
                         onClick={() => setPageSize(option)}
                         className={`rounded-full px-3 py-2 text-sm font-bold transition ${
                           pageSize === option
-                            ? 'bg-ink text-paper'
-                            : 'border border-stone-900/10 bg-stone-100 text-stone-700 hover:border-clay/30 hover:text-clay'
+                            ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
+                            : 'border border-black/10 bg-white/90 text-stone-700 hover:border-clay/30 hover:text-clay'
                         }`}
                       >
                         {option}
@@ -444,8 +445,8 @@ export default function GalleryPage() {
                         onClick={() => setPageSize(option)}
                         className={`rounded-full px-3 py-2 text-sm font-bold transition ${
                           pageSize === option
-                            ? 'bg-ink text-paper'
-                            : 'border border-stone-900/10 bg-stone-100 text-stone-700 hover:border-clay/30 hover:text-clay'
+                            ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
+                            : 'border border-black/10 bg-white/90 text-stone-700 hover:border-clay/30 hover:text-clay'
                         }`}
                       >
                         {option}
@@ -488,7 +489,7 @@ export default function GalleryPage() {
       {isMobileMenuOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-ink/15 lg:hidden"
+          className="fixed inset-0 z-40 bg-ink/12 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
           aria-label="Close gallery menu overlay"
         />
@@ -528,14 +529,14 @@ export default function GalleryPage() {
         <div ref={sentinelRef} className="h-12" />
 
         {isLoadingMore ? (
-          <div className="mt-6 flex items-center justify-center gap-3 rounded-full border border-stone-900/10 bg-white/70 px-5 py-3 text-sm text-stone-700 shadow-card">
+          <div className="mt-6 flex items-center justify-center gap-3 rounded-full border border-black/5 bg-white/92 px-5 py-3 text-sm text-stone-700 shadow-card">
             <span className="inline-flex size-3 animate-spin rounded-full border-2 border-clay border-t-transparent" />
             Loading {pageSize} more images...
           </div>
         ) : null}
 
         {!hasMore && !isInitialLoading && images.length > 0 ? (
-          <div className="mt-6 rounded-full border border-stone-900/10 bg-white/70 px-5 py-3 text-center text-sm text-stone-600 shadow-card">
+          <div className="mt-6 rounded-full border border-black/5 bg-white/92 px-5 py-3 text-center text-sm text-stone-600 shadow-card">
             End of the gallery feed.
           </div>
         ) : null}
@@ -543,11 +544,11 @@ export default function GalleryPage() {
 
       {isTagModalOpen ? (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/45 px-4 py-8 backdrop-blur-sm"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/24 px-4 py-8 backdrop-blur-sm"
           onClick={() => setIsTagModalOpen(false)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[2rem] border border-stone-900/10 bg-paper shadow-[0_32px_80px_rgba(21,19,18,0.24)]"
+            className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[2rem] border border-black/5 bg-white/95 shadow-[0_32px_80px_rgba(0,0,0,0.16)]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-stone-900/10 px-4 py-4 sm:px-6 sm:py-5">
@@ -583,10 +584,11 @@ export default function GalleryPage() {
                     key={tag.id}
                     type="button"
                     onClick={() => handleSelectTag(tag.slug)}
-                    className={`rounded-[1.5rem] border px-4 py-4 text-left transition ${selectedTag === tag.slug
-                        ? 'border-transparent bg-ink text-paper shadow-card'
-                        : 'border-stone-900/10 bg-white/75 text-stone-800 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay'
-                      }`}
+                    className={`rounded-[1.5rem] border px-4 py-4 text-left transition ${
+                      selectedTag === tag.slug
+                        ? 'border-transparent bg-clay text-white shadow-[0_16px_32px_rgba(0,113,227,0.2)]'
+                        : 'border-black/5 bg-white/80 text-stone-800 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay'
+                    }`}
                   >
                     <p className="text-[11px] uppercase tracking-[0.26em] opacity-70">Keyword</p>
                     <p className="mt-3 font-display text-3xl leading-none">#{tag.slug}</p>

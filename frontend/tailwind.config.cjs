@@ -4,20 +4,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: '#151312',
-        paper: '#f3ece3',
-        sand: '#d8c6b1',
-        clay: '#b5623f',
-        ember: '#d87b4f',
-        olive: '#4b5945',
-        bronze: '#8f6a47',
+        ink: '#1d1d1f',
+        paper: '#f5f5f7',
+        sand: '#d2d2d7',
+        clay: '#0071e3',
+        ember: '#2997ff',
+        olive: '#6e6e73',
+        bronze: '#ffffff',
       },
       boxShadow: {
-        card: '0 24px 40px rgba(21, 19, 18, 0.14)',
+        card: '0 18px 44px rgba(0, 0, 0, 0.08)',
       },
       backgroundImage: {
         grain:
-          "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18) 0, rgba(255,255,255,0) 38%), radial-gradient(circle at 80% 0%, rgba(216, 123, 79, 0.16) 0, rgba(216, 123, 79, 0) 30%), radial-gradient(circle at 10% 80%, rgba(75, 89, 69, 0.12) 0, rgba(75, 89, 69, 0) 32%)"
+          "radial-gradient(circle at top, rgba(0, 113, 227, 0.12) 0, rgba(0, 113, 227, 0) 26%), radial-gradient(circle at 82% 12%, rgba(255,255,255,0.96) 0, rgba(255,255,255,0) 32%), linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(245,245,247,0) 58%)"
       }
     },
   },

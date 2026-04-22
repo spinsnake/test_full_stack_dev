@@ -553,7 +553,7 @@ export default function ManagePage() {
                   </div>
                 ) : null}
 
-                <div className="min-w-0 rounded-[1.5rem] border border-stone-900/10 bg-white/60 p-4">
+                <div className="min-w-0 rounded-[1.75rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-[11px] uppercase tracking-[0.26em] text-stone-500">Catalog</p>
@@ -567,8 +567,8 @@ export default function ManagePage() {
                         key={image.id}
                         className={`rounded-[1.5rem] border p-4 transition ${
                           imageForm.id === image.id
-                            ? 'border-transparent bg-ink text-paper shadow-card'
-                            : 'border-stone-900/10 bg-white/80 text-ink hover:-translate-y-0.5 hover:border-clay/30'
+                            ? 'border-sky-200/80 bg-sky-50/85 text-ink shadow-card'
+                            : 'border-black/5 bg-white/88 text-ink hover:-translate-y-0.5 hover:border-clay/30'
                         }`}
                       >
                         <div className="flex flex-col gap-4">
@@ -606,11 +606,7 @@ export default function ManagePage() {
                                   </button>
                                   <button
                                     type="button"
-                                    className={`rounded-full px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] ${
-                                      imageForm.id === image.id
-                                        ? 'border border-red-300/40 bg-red-500/10 text-red-100'
-                                        : 'border border-red-200 bg-red-50 text-red-600'
-                                    }`}
+                                    className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-red-600 transition hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-100"
                                     onClick={() => void handleDeleteImage(image)}
                                   >
                                     Delete
@@ -626,11 +622,7 @@ export default function ManagePage() {
                                 key={`${image.id}-${tag.id}`}
                                 type="button"
                                 onClick={() => void handleDetachTagFromImageCard(image.id, tag.id)}
-                                className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] transition ${
-                                  imageForm.id === image.id
-                                    ? 'border border-white/20 bg-white/10 text-paper hover:border-red-300/40 hover:bg-red-500/10 hover:text-red-100'
-                                    : 'border border-stone-200 bg-stone-100 text-stone-700 hover:border-red-200 hover:bg-red-50 hover:text-red-600'
-                                }`}
+                                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/88 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-stone-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
                                 title={`Remove #${tag.slug} from image`}
                               >
                                 <span>#{tag.slug}</span>
@@ -702,7 +694,7 @@ export default function ManagePage() {
                 </div>
               </form>
 
-              <div className="mt-8 rounded-[1.5rem] border border-stone-900/10 bg-white/60 p-4">
+              <div className="mt-8 rounded-[1.75rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm">
                 <p className="text-[11px] uppercase tracking-[0.26em] text-stone-500">Catalog</p>
                 <h3 className="mt-2 text-lg font-bold text-ink">{tags.length} active tags</h3>
 
@@ -712,8 +704,8 @@ export default function ManagePage() {
                       key={tag.id}
                       className={`rounded-[1.5rem] border p-4 transition ${
                         tagForm.id === tag.id
-                          ? 'border-transparent bg-ink text-paper shadow-card'
-                          : 'border-stone-900/10 bg-white/80 text-ink hover:-translate-y-0.5 hover:border-clay/30'
+                          ? 'border-sky-200/80 bg-sky-50/85 text-ink shadow-card'
+                          : 'border-black/5 bg-white/88 text-ink hover:-translate-y-0.5 hover:border-clay/30'
                       }`}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -734,11 +726,7 @@ export default function ManagePage() {
                           </button>
                           <button
                             type="button"
-                            className={`rounded-full px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] ${
-                              tagForm.id === tag.id
-                                ? 'border border-red-300/40 bg-red-500/10 text-red-100'
-                                : 'border border-red-200 bg-red-50 text-red-600'
-                            }`}
+                            className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-red-600 transition hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-100"
                             onClick={() => void handleDeleteTag(tag)}
                           >
                             Delete
@@ -756,11 +744,11 @@ export default function ManagePage() {
 
       {tagPickerImage ? (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/45 px-4 py-8 backdrop-blur-sm"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/24 px-4 py-8 backdrop-blur-sm"
           onClick={closeTagPicker}
         >
           <div
-            className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-stone-900/10 bg-paper shadow-[0_32px_80px_rgba(21,19,18,0.24)]"
+            className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-black/5 bg-white/95 shadow-[0_32px_80px_rgba(0,0,0,0.16)]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-stone-900/10 px-5 py-5 sm:px-6">
@@ -796,8 +784,8 @@ export default function ManagePage() {
                         onClick={() => toggleTagPickerSelection(tag.id)}
                         className={`rounded-full border px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] transition ${
                           isSelected
-                            ? 'border-transparent bg-ink text-paper shadow-card'
-                            : 'border-stone-900/10 bg-white/85 text-stone-700 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay'
+                            ? 'border-transparent bg-clay text-white shadow-[0_16px_32px_rgba(0,113,227,0.2)]'
+                            : 'border-black/5 bg-white/88 text-stone-700 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay'
                         }`}
                       >
                         #{tag.slug}
