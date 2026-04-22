@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color: #151312;
+    background-color: #f3ece3;
+    font-family: 'Space Grotesk', sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background:
+      radial-gradient(circle at top, rgba(216, 123, 79, 0.16), transparent 32%),
+      linear-gradient(180deg, #f8f2ea 0%, #f3ece3 56%, #eee3d5 100%);
+  }
+
+  button {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+  }
+
+  .tag-chip {
+    @apply inline-flex items-center rounded-full border border-stone-900/10 bg-white/70 px-4 py-3 text-xs font-medium uppercase tracking-[0.24em] text-stone-700 transition duration-200 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay;
+  }
+
+  .tag-chip-active {
+    @apply border-transparent bg-ink text-paper shadow-card;
+  }
+
+  .panel-card {
+    @apply rounded-[1.75rem] border border-stone-900/10 bg-white/70 p-4 shadow-card;
+  }
+
+  .form-field {
+    @apply flex flex-col gap-2;
+  }
+
+  .field-label {
+    @apply text-[11px] font-medium uppercase tracking-[0.24em] text-stone-500;
+  }
+
+  .field-input {
+    @apply w-full rounded-[1rem] border border-stone-900/10 bg-white/90 px-4 py-3 text-sm text-ink outline-none transition placeholder:text-stone-400 focus:border-clay/50 focus:ring-2 focus:ring-clay/20;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-ink px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-paper transition hover:-translate-y-0.5 hover:bg-clay disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center rounded-full border border-stone-900/10 bg-white/80 px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-stone-700 transition hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .danger-button {
+    @apply inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-red-600 transition hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .edit-button {
+    @apply rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-700 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-100;
+  }
+
+  .edit-button-active {
+    @apply rounded-full border border-sky-300/40 bg-sky-400/15 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-100 transition hover:-translate-y-0.5 hover:border-sky-200/60 hover:bg-sky-400/20;
+  }
+
+  .add-button {
+    @apply rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-700 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100;
+  }
+
+  .add-button-active {
+    @apply rounded-full border border-emerald-300/40 bg-emerald-400/15 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-100 transition hover:-translate-y-0.5 hover:border-emerald-200/60 hover:bg-emerald-400/20;
+  }
+
+  .gallery-grid {
+    position: relative;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+  }
+
+  .gallery-sizer,
+  .gallery-item {
+    width: 100%;
+  }
+
+  .gallery-item {
+    padding: 0 0.75rem 1.5rem;
+  }
+
+  .gallery-card {
+    @apply overflow-hidden rounded-[1.75rem] border border-stone-900/10 bg-white/80 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_48px_rgba(21,19,18,0.18)];
+  }
+}
+
+@media (min-width: 640px) {
+  .gallery-sizer,
+  .gallery-item {
+    width: 50%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gallery-sizer,
+  .gallery-item {
+    width: 33.3333%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .gallery-sizer,
+  .gallery-item {
+    width: 25%;
+  }
+}

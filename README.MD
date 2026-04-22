@@ -1,56 +1,124 @@
 # Full-Stack Developer Test
 
-## Database Migration
+Image gallery SPA with infinite scroll, hashtag filtering, Go API, and MySQL.
 
-ส่วนนี้ใช้ `golang-migrate` เพื่อจัดการ schema ของ MySQL โดยอ่านค่าการเชื่อมต่อจากไฟล์ `backend/.env` ผ่านสคริปต์ `backend/scripts/migrate.ps1`
+## Scope
 
-### โครงสร้างไฟล์ที่เกี่ยวข้อง
+- gallery page with masonry layout
+- infinite scroll with configurable chunk size
+- hashtag filter
+- management page for image CRUD, tag CRUD, and image-tag assignment
+- MySQL migrations and demo seed data
+- OpenAPI spec and Swagger UI for the backend
 
-- `backend/migration/*.up.sql` สำหรับ migrate ขึ้น
-- `backend/migration/*.down.sql` สำหรับ rollback
-- `backend/scripts/migrate.ps1` ตัวช่วยอ่าน env และเรียก `migrate`
-- `backend/.env` ค่าจริงในเครื่อง
-- `backend/.env.example` template
+## Stack
 
-### ก่อนเริ่ม
+- Frontend: React, Vite, TypeScript, Tailwind CSS
+- Backend: Go, Fiber
+- Database: MySQL 8
+- Docs: OpenAPI, Swagger UI
+- Demo image source: placehold.co
 
-1. ตรวจว่า MySQL รันอยู่และมีฐานข้อมูล `gallery_db`
-2. ตั้งค่าใน `backend/.env` อย่างน้อย:
-   - `MYSQL_HOST`
-   - `MYSQL_PORT`
-   - `MYSQL_USER`
-   - `MYSQL_PASSWORD`
-   - `MYSQL_DATABASE`
-3. ติดตั้ง `migrate` ที่รองรับ MySQL driver
+Production architecture notes are documented in `docs/stack.md`.
 
-ตัวอย่างติดตั้ง:
+## Project Layout
 
-```powershell
-go install -tags "mysql" github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+```text
+backend/   Go API, migrations, Swagger, tests
+frontend/  React SPA and management UI
+docs/      assignment PDF and architecture notes
 ```
 
-### วิธีรัน Migration
+## Assignment Coverage
 
-รันจาก root โปรเจกต์ (`D:\Test_full_stack_developer`)
+Implemented:
+
+- gallery page showing images with tags
+- incremental loading while scrolling
+- variable image sizes in a masonry layout
+- filtering by tag
+- placeholder images and generated demo tags
+- architecture notes for production stack and deployment approach
+
+Also included:
+
+- `/manage` page for image CRUD
+- tag CRUD
+- attach and detach tags from images
+
+## Run Locally
+
+### 1. Backend
+
+Configure `backend/.env` from `backend/.env.example`, then run:
 
 ```powershell
-# ดู version ปัจจุบัน
-powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 version
+cd backend
+go run ./cmd/api
+```
 
-# migrate ขึ้นทั้งหมด
+Default API URL:
+
+```text
+http://localhost:8080
+```
+
+Swagger:
+
+```text
+http://localhost:8080/swagger
+```
+
+### 2. Frontend
+
+Configure `frontend/.env` from `frontend/.env.example`, then run:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Default frontend URL:
+
+```text
+http://localhost:5173
+```
+
+## Database
+
+Migration and seed scripts are under `backend/migration/`.
+
+Run from the repository root:
+
+```powershell
 powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 up
-
-# rollback ลง 1 step
-powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 down 1
-
-# force version (ใช้ตอนแก้ dirty state)
-powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 force 0
 ```
 
-ถ้าต้องใช้ env ไฟล์อื่น:
+Seed data currently includes:
+
+- 100 images from placehold.co
+- 20 readable tags
+- multiple image-tag assignments
+
+## Tests
+
+Backend:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 up -EnvFile .env.staging
+cd backend
+go test ./...
 ```
 
+Frontend build check:
 
+```powershell
+cd frontend
+npm run build
+```
+
+## Notes
+
+- `docs/stack.md` contains the proposed production setup, including server sizing, Ubuntu, Nginx, Docker Compose, and GitHub Actions.
+- Docker, Nginx, and CI workflow files are not included in the repository yet.
+- `frontend/README.md` and `backend/README.md` contain app-specific details.
