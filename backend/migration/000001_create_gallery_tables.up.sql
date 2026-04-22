@@ -7,21 +7,29 @@ CREATE TABLE IF NOT EXISTS images (
   alt_text VARCHAR(255) NULL,
   source VARCHAR(100) NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
+  deleted_at DATETIME(3) NULL,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
     ON UPDATE CURRENT_TIMESTAMP(3),
-  INDEX idx_images_feed (is_active, id)
+  INDEX idx_images_feed (is_active, deleted_at, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS tags (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(64) NOT NULL,
   slug VARCHAR(64) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  deleted_at DATETIME(3) NULL,
+  active_name VARCHAR(64)
+    GENERATED ALWAYS AS (CASE WHEN deleted_at IS NULL THEN name ELSE NULL END) STORED,
+  active_slug VARCHAR(64)
+    GENERATED ALWAYS AS (CASE WHEN deleted_at IS NULL THEN slug ELSE NULL END) STORED,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
     ON UPDATE CURRENT_TIMESTAMP(3),
-  UNIQUE KEY uk_tags_name (name),
-  UNIQUE KEY uk_tags_slug (slug)
+  UNIQUE KEY uk_tags_active_name (active_name),
+  UNIQUE KEY uk_tags_active_slug (active_slug),
+  INDEX idx_tags_active (is_active, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS image_tags (

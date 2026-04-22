@@ -1,0 +1,559 @@
+openapi: 3.0.3
+info:
+  title: Image Gallery API
+  version: 1.0.0
+  description: |
+    REST API for the full-stack developer test.
+    The API manages images, tags, and tag-to-image assignments for an image gallery.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Health
+  - name: Images
+  - name: Tags
+  - name: Image Tags
+paths:
+  /healthz:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /api/images:
+    get:
+      tags: [Images]
+      summary: List images
+      description: |
+        Returns active images ordered by newest first.
+        Supports cursor-based pagination and optional tag filtering.
+      parameters:
+        - in: query
+          name: cursor
+          schema:
+            type: integer
+            format: uint64
+          description: Return images with id less than this cursor.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+          description: Number of items to return.
+        - in: query
+          name: tag
+          schema:
+            type: string
+          description: Tag slug used to filter images.
+      responses:
+        "200":
+          description: Image list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageListResponse"
+    post:
+      tags: [Images]
+      summary: Create image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateImageInput"
+            example:
+              image_url: https://placehold.co/1200x900?text=Travel+01
+              thumbnail_url: https://placehold.co/400x300?text=Travel+01
+              width: 1200
+              height: 900
+              alt_text: Travel image 01
+              source: placehold.co
+      responses:
+        "201":
+          description: Created image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageResponse"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/images/{imageID}:
+    get:
+      tags: [Images]
+      summary: Get image by id
+      parameters:
+        - $ref: "#/components/parameters/ImageID"
+      responses:
+        "200":
+          description: Image detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageResponse"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      tags: [Images]
+      summary: Update image
+      parameters:
+        - $ref: "#/components/parameters/ImageID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateImageInput"
+            example:
+              alt_text: Updated alt text
+              source: placehold.co
+      responses:
+        "200":
+          description: Updated image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageResponse"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags: [Images]
+      summary: Soft delete image
+      parameters:
+        - $ref: "#/components/parameters/ImageID"
+      responses:
+        "200":
+          description: Image deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/images/{imageID}/tags:
+    post:
+      tags: [Image Tags]
+      summary: Attach tag to image
+      parameters:
+        - $ref: "#/components/parameters/ImageID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttachTagToImageInput"
+            example:
+              tag_id: 2
+      responses:
+        "201":
+          description: Tag attached to image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageTagAssignmentResponse"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Image or tag not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Tag already attached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/images/{imageID}/tags/{tagID}:
+    delete:
+      tags: [Image Tags]
+      summary: Remove tag from image
+      parameters:
+        - $ref: "#/components/parameters/ImageID"
+        - $ref: "#/components/parameters/TagID"
+      responses:
+        "200":
+          description: Tag removed from image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Assignment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tags:
+    get:
+      tags: [Tags]
+      summary: List tags
+      responses:
+        "200":
+          description: Tag list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagListResponse"
+    post:
+      tags: [Tags]
+      summary: Create tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTagInput"
+            example:
+              name: Travel
+              slug: travel
+      responses:
+        "201":
+          description: Created tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tags/{tagID}:
+    get:
+      tags: [Tags]
+      summary: Get tag by id
+      parameters:
+        - $ref: "#/components/parameters/TagID"
+      responses:
+        "200":
+          description: Tag detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "404":
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      tags: [Tags]
+      summary: Update tag
+      parameters:
+        - $ref: "#/components/parameters/TagID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTagInput"
+            example:
+              name: City
+              slug: city
+      responses:
+        "200":
+          description: Updated tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags: [Tags]
+      summary: Soft delete tag
+      parameters:
+        - $ref: "#/components/parameters/TagID"
+      responses:
+        "200":
+          description: Tag deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  parameters:
+    ImageID:
+      in: path
+      name: imageID
+      required: true
+      schema:
+        type: integer
+        format: uint64
+    TagID:
+      in: path
+      name: tagID
+      required: true
+      schema:
+        type: integer
+        format: uint64
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    TagSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint64
+        name:
+          type: string
+        slug:
+          type: string
+      required: [id, name, slug]
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint64
+        name:
+          type: string
+        slug:
+          type: string
+        is_active:
+          type: boolean
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, name, slug, is_active, created_at, updated_at]
+    Image:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint64
+        image_url:
+          type: string
+          format: uri
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        alt_text:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/TagSummary"
+      required: [id, image_url, is_active, created_at, updated_at]
+    CreateImageInput:
+      type: object
+      properties:
+        image_url:
+          type: string
+          format: uri
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        alt_text:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+      required: [image_url]
+    UpdateImageInput:
+      type: object
+      properties:
+        image_url:
+          type: string
+          format: uri
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        alt_text:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+    CreateTagInput:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+          nullable: true
+      required: [name]
+    UpdateTagInput:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        slug:
+          type: string
+          nullable: true
+    AttachTagToImageInput:
+      type: object
+      properties:
+        tag_id:
+          type: integer
+          format: uint64
+      required: [tag_id]
+    ImageTagAssignment:
+      type: object
+      properties:
+        image_id:
+          type: integer
+          format: uint64
+        tag_id:
+          type: integer
+          format: uint64
+      required: [image_id, tag_id]
+    ImageResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Image"
+      required: [data]
+    ImageListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+      required: [data]
+    TagResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Tag"
+      required: [data]
+    TagListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+      required: [data]
+    ImageTagAssignmentResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ImageTagAssignment"
+      required: [data]
