@@ -27,6 +27,8 @@ bin/
 **/bin/
 tmp/
 **/tmp/
+.cache/
+**/.cache/
 vendor/
 *.exe
 *.exe~
