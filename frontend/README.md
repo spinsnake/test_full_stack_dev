@@ -91,6 +91,29 @@ Preview:
 npm run preview
 ```
 
+## Docker
+
+The frontend container build is defined in [Dockerfile](D:\Test_full_stack_developer\frontend\Dockerfile).
+
+Runtime uses Nginx with [nginx.conf](D:\Test_full_stack_developer\frontend\nginx.conf) to:
+
+- serve the built SPA
+- route `/api` to the backend service
+- route `/swagger` to the backend service
+- fallback unknown frontend routes to `index.html`
+
+From the repository root:
+
+```powershell
+docker compose up --build
+```
+
+Default Docker URL:
+
+```text
+http://localhost:8080
+```
+
 ## Backend Endpoints Used
 
 - `GET /api/tags`
