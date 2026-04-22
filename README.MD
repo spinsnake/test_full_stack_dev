@@ -85,6 +85,34 @@ Default frontend URL:
 http://localhost:5173
 ```
 
+## Run With Docker Compose
+
+The repository now includes:
+
+- `backend/Dockerfile`
+- `frontend/Dockerfile`
+- `frontend/nginx.conf`
+- `docker-compose.yml`
+
+Start the full stack:
+
+```powershell
+docker compose up --build
+```
+
+Public entrypoint:
+
+```text
+http://localhost:8080
+```
+
+What Docker Compose starts:
+
+- `mysql` for the database
+- `migrate` to apply schema and seed data
+- `backend` for the Go API
+- `frontend` running on Nginx and proxying `/api` and `/swagger`
+
 ## Database
 
 Migration and seed scripts are under `backend/migration/`.
@@ -120,5 +148,6 @@ npm run build
 ## Notes
 
 - `docs/stack.md` contains the proposed production setup, including server sizing, Ubuntu, Nginx, Docker Compose, and GitHub Actions.
-- Docker, Nginx, and CI workflow files are not included in the repository yet.
+- Dockerfiles, Docker Compose, and Nginx config are included in the repository.
+- GitHub Actions workflow files are not included yet.
 - `frontend/README.md` and `backend/README.md` contain app-specific details.

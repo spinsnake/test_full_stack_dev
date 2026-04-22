@@ -73,6 +73,22 @@ go run ./cmd/api
 
 By default the API listens on `http://localhost:8080`.
 
+## Docker
+
+The backend container build is defined in [Dockerfile](D:\Test_full_stack_developer\backend\Dockerfile).
+
+From the repository root, you can run the full stack with:
+
+```powershell
+docker compose up --build
+```
+
+In Docker Compose:
+
+- backend listens internally on `backend:8080`
+- MySQL runs as service `mysql`
+- migrations are applied by the `migrate` service before the backend starts
+
 ## Test
 
 Run all backend tests from `backend/`:
