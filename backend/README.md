@@ -65,6 +65,20 @@ go run ./cmd/api
 
 By default the API listens on `http://localhost:8080`.
 
+## Test
+
+Run all backend tests from `backend/`:
+
+```powershell
+go test ./...
+```
+
+The current test suite covers:
+
+- image insert, update, soft delete, and list by limit
+- tag insert, update, and soft delete
+- attach tag to image and remove tag from image
+
 ## Swagger
 
 Once the server is running:
