@@ -100,18 +100,32 @@ Start the full stack:
 docker compose up --build
 ```
 
-Public entrypoint:
+What this starts:
+
+- `mysql` for the local database
+- `migrate` to apply schema and seed demo data
+- `backend` for the Go API
+- `frontend` running on Nginx
+
+Public URLs:
 
 ```text
-http://localhost:8080
+Frontend: http://localhost:8080
+Backend API: http://localhost:8081
+Swagger: http://localhost:8081/swagger
 ```
 
-What Docker Compose starts:
+The Docker Compose setup uses demo/mock data automatically:
 
-- `mysql` for the database
-- `migrate` to apply schema and seed data
-- `backend` for the Go API
-- `frontend` running on Nginx and proxying `/api` and `/swagger`
+- `000001_create_gallery_tables.up.sql` creates the schema
+- `000002_seed_demo_data.up.sql` seeds the local MySQL database with demo images and tags
+
+If you want a clean reset of the local database and seed data, remove the volume and start again:
+
+```powershell
+docker compose down -v
+docker compose up --build
+```
 
 ## Database
 

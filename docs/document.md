@@ -1,20 +1,89 @@
-# ภาพรวมของระบบ
+# Production Architecture Topology
 
-## Masonry image gallery
+## Production Architecture Topology
 
-ภาพรวมของระบบ จาก requirement ได้ทำการออกแบบระบบโดยแบ่งระบบ และ tech stach ออกเป็นสามส่วนดังนี้1. ส่วน frontent ใช้ Vite, react native, Typescript, Tailwind CSS, Masonry Layout ในการแสดงผล2. ส่วน backend ใช้ Go fiber ในการทำเป็น API service
+ใน production ระบบจะถูกแยกออกเป็น 3 ส่วนหลัก คือ frontend, backend และ database โดยกำหนดให้มีเฉพาะ service ที่จำเป็นเท่านั้นที่เปิดให้เข้าถึงจากภายนอก เพื่อเพิ่มความปลอดภัยและลดพื้นที่เสี่ยงของระบบ
 
-3. ส่วน Database ใช้ MySql ในการเก็บข้อมูล
+โครงสร้างการเข้าถึงจากภายนอก
 
-4. Containerization ใช้ Docker
+ผู้ใช้ (User) จะเข้าถึงระบบผ่าน Frontend เป็นหลัก
 
-5. Reverse Proxy, Nginx
+Frontend ทำหน้าที่เป็น public entrypoint สำหรับการใช้งานผ่าน browser
 
-ภาพแสดงส่วน backend frontend และ database
+Backend เปิดให้เข้าถึงผ่าน HTTP/HTTPS เฉพาะสำหรับการเรียก API
 
-# database
+Database จะไม่เปิด public access และอนุญาตให้เชื่อมต่อได้เฉพาะจาก Backend ภายใน private network เท่านั้น
 
-Database Schemaประกอบด้วย table ต่อไปนี้1. images ทำหน้าที่เก็บข้อมูลรูปภาพ
+บทบาทของแต่ละส่วนใน production
+
+Frontend
+
+ทำหน้าที่แสดงผล UI ของระบบ
+
+build เป็น static asset ด้วย Vite
+
+serve ผ่าน Nginx
+
+ติดต่อกับ backend ผ่าน REST API โดยใช้ VITE_API_BASE_URL
+
+Backend
+
+ทำหน้าที่เป็น API service ของระบบ
+
+รับ request จาก frontend เช่น การดึงรูปภาพ, tag, การเพิ่ม/แก้ไข/ลบข้อมูล
+
+ประมวลผล business logic และเชื่อมต่อกับฐานข้อมูล
+
+สามารถเปิด public endpoint สำหรับ API และ Swagger ได้ตาม environment ที่ใช้งาน
+
+Database
+
+ใช้ MySQL สำหรับเก็บข้อมูลรูปภาพ, tag และความสัมพันธ์ระหว่างข้อมูล
+
+อยู่ใน private/internal network
+
+ไม่เปิดให้ user หรือ browser เข้าถึงโดยตรง
+
+รับการเชื่อมต่อจาก backend เท่านั้น
+
+Traffic Flow
+ลำดับการทำงานของระบบใน production เป็นดังนี้
+
+ผู้ใช้เปิดเว็บไซต์ผ่าน Frontend
+
+Nginx ทำหน้าที่ serve static frontend ให้กับ browser
+
+เมื่อ frontend ต้องการข้อมูล เช่น รายการรูปภาพหรือ tag จะส่ง request ไปยัง Backend API
+
+Backend รับ request และประมวลผล business logic
+
+Backend query หรือ update ข้อมูลใน MySQL
+
+MySQL ส่งผลลัพธ์กลับไปยัง Backend
+
+Backend ส่ง response กลับไปยัง Frontend
+
+Frontend นำข้อมูลมาแสดงผลให้ผู้ใช้เห็น
+
+การเปิด Public / Private Access
+
+Frontend : Public
+
+Backend API : Public ตามรูปแบบ deployment
+
+Swagger UI : ควรเปิดเฉพาะ environment สำหรับ development / staging หรือจำกัดสิทธิ์ใน production
+
+Database : Private only
+
+![image3.png](document-assets/image3.png)
+
+Traffic Flow
+
+# Database
+
+Database Schema
+ประกอบด้วย table ต่อไปนี้
+1. images ทำหน้าที่เก็บข้อมูลรูปภาพ
 
 | name | type | note |
 | --- | --- | --- |
@@ -57,9 +126,13 @@ Database Schemaประกอบด้วย table ต่อไปนี้1. i
 | version | BIGINT NOT NULL | หมายเลข version ของ migration ล่าสุดที่ถูก apply กับฐานข้อมูล ใช้บอกว่าตอนนี้ schema อยู่ที่ขั้นไหน |
 | dirty | BOOLEAN NOT NULL | ใช้บอกว่าการ migrate ล่าสุดสมบูรณ์หรือไม่ ถ้าเป็น true แปลว่า migration ค้างหรือพังกลางทาง ถ้าเป็น false แปลว่า migration ล่าสุดเสร็จสมบูรณ์ |
 
+![image1.png](document-assets/image1.png)
+
 ภาพแสดงส่วน database schema
 
 โฟลเดอร์ที่เก็บโครงสร้างแต่ละ tables จะอยู่ในโฟล์เดอร์ backend/migration/
+
+![image2.png](document-assets/image2.png)
 
 Database Migration
 
@@ -85,23 +158,24 @@ up ใช้สำหรับ apply migration จาก version ปัจจุ
 
 down ใช้สำหรับ rollback migration ย้อนกลับตามจำนวน step ที่กำหนด
 
-วิธีรัน Migrationโปรเจคนี้มี script ช่วยรัน migration อยู่ที่ backend/scripts/migrate.ps1
+วิธีรัน Migration
+โปรเจคนี้มี script ช่วยรัน migration อยู่ที่ backend/scripts/migrate.ps1
 
 ตัวอย่างคำสั่ง
 
-```powershell
+```text
 powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 up
 ```
 
 ใช้สำหรับ apply migration ทั้งหมดที่ยังไม่ได้รัน
 
-```powershell
+```text
 powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 down 1
 ```
 
 ใช้สำหรับ rollback ย้อนกลับ 1 step
 
-```powershell
+```text
 powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 version
 ```
 
@@ -113,7 +187,7 @@ powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 version
 
 เมื่อรัน down ระบบจะย้อนการเปลี่ยนแปลงตามลำดับ migration ที่ rollback
 
-# frontend
+# Frontend
 
 Frontend
 
@@ -145,7 +219,8 @@ Frontend
 
 ใช้เป็นหน้าสำหรับ admin หรือผู้ดูแลระบบในการจัดการข้อมูล gallery
 
-Frontend Tech StackFrontend ของระบบพัฒนาด้วย React, Vite และ TypeScript สำหรับสร้าง Single Page Application (SPA) โดยใช้ Tailwind CSS สำหรับจัดการ style, react-router-dom สำหรับ routing ภายในระบบ, masonry-layout และ imagesloaded สำหรับจัดการ image gallery แบบ masonry และใช้ Playwright สำหรับ E2E testing ของฝั่ง frontend
+Frontend Tech Stack
+Frontend ของระบบพัฒนาด้วย React, Vite และ TypeScript สำหรับสร้าง Single Page Application (SPA) โดยใช้ Tailwind CSS สำหรับจัดการ style, react-router-dom สำหรับ routing ภายในระบบ, masonry-layout และ imagesloaded สำหรับจัดการ image gallery แบบ masonry และใช้ Playwright สำหรับ E2E testing ของฝั่ง frontend
 
 โครงสร้างไฟล์หลักของ frontend
 
@@ -180,14 +255,15 @@ Playwright จะเปิด frontend ผ่าน Vite dev server อัตโ
 
 ทำให้ test เน้นตรวจ behavior ของ frontend โดยตรง เช่น rendering, filtering, form submission และ state update
 
-วิธีรันรันจากโฟลเดอร์ frontend npm run e2e
+วิธีรัน
+รันจากโฟลเดอร์ frontend npm run e2e
 
 | file | สิ่งที่ทดสอบ |
 | --- | --- |
 | frontend/e2e/gallery.spec.ts (line 1) | ทดสอบหน้า gallery ว่าสามารถโหลดรายการรูปเริ่มต้นได้, เปิด Tags Filter, เลือก tag แล้วจำนวนรูปถูกกรองถูกต้อง, และสามารถกดไปหน้า /manage ได้ |
 | frontend/e2e/manage.spec.ts (line 1) | ทดสอบหน้า /manage ว่าสามารถกรอกข้อมูลสร้าง image ใหม่ได้, เลือก tag ตอนสร้าง image ได้, กด Create Image แล้ว image ใหม่ถูกเพิ่มใน catalog พร้อม tag ที่เลือกไว้ |
 
-# backend
+# Backend
 
 Backend API Services
 
@@ -219,7 +295,8 @@ Backend ถูกออกแบบโดยแยกหน้าที่ขอ
 | backend/migration | เก็บไฟล์ SQL migration และ seed data |
 | backend/docs | เก็บ OpenAPI spec และไฟล์ Swagger UI |
 
-แนวทางการทำงานของ Backendลำดับการทำงานหลักของ backend คือ
+แนวทางการทำงานของ Backend
+ลำดับการทำงานหลักของ backend คือ
 
 client ส่ง request เข้ามาที่ route
 
@@ -235,27 +312,21 @@ handler ส่ง response กลับในรูปแบบ JSON
 
 ตัวอย่าง API หลักที่ระบบรองรับ
 
+```text
 GET /api/images
-
 POST /api/images
-
 PATCH /api/images/:imageID
-
 DELETE /api/images/:imageID
-
 GET /api/tags
-
 POST /api/tags
-
 PATCH /api/tags/:tagID
-
 DELETE /api/tags/:tagID
-
 POST /api/images/:imageID/tags
-
 DELETE /api/images/:imageID/tags/:tagID
+```
 
-Swagger / OpenAPIBackend มีเอกสาร API ในรูปแบบ OpenAPI และสามารถเปิดดูผ่าน Swagger UI ได้ ใช้สำหรับดูรายการ endpoint, request body, response schema และทดสอบ API ได้จาก browser โดยตรง
+Swagger / OpenAPI
+Backend มีเอกสาร API ในรูปแบบ OpenAPI และสามารถเปิดดูผ่าน Swagger UI ได้ ใช้สำหรับดูรายการ endpoint, request body, response schema และทดสอบ API ได้จาก browser โดยตรง
 
 ถ้ารัน local:
 
@@ -277,7 +348,7 @@ OpenAPI YAML: https://<backend-domain>/swagger/openapi.yaml
 
 restart หรือ rebuild app
 
-# deployment
+# Deployment
 
 Deployment
 
@@ -315,38 +386,290 @@ Database ใช้ MySQL
 
 การจัดการ schema และ seed data ใช้ SQL migration
 
-Deployment บน Cloudในโปรเจคนี้สามารถ deploy ขึ้น Railway ได้โดยแยก service ออกเป็น
+วิธีการ Deploy บน Production
 
-frontend
+การ deploy ระบบใน production จะแยก service ออกเป็น 3 ส่วนหลัก ได้แก่ frontend, backend และ database เพื่อให้สามารถจัดการแต่ละส่วนได้อย่างอิสระและลดผลกระทบเมื่อมีการอัปเดตระบบ
 
-backend
+องค์ประกอบที่ใช้ในการ Deploy
 
-mysql
+Frontend
 
-ลำดับการ deploy คือ
+build ด้วย Vite
 
-deploy database (mysql)
+ได้ผลลัพธ์เป็น static files
 
-deploy backend
+serve ผ่าน Nginx
 
-deploy frontend
+Backend
 
-สำหรับ backend สามารถตั้งค่าให้รัน migration อัตโนมัติผ่าน environment variable เช่น
+build เป็น Go binary
 
+ทำงานเป็น REST API service
+
+Database
+
+ใช้ MySQL 8
+
+เก็บข้อมูลของ image, tag และ relationship ต่าง ๆ
+
+Containerization
+
+ใช้ Docker สำหรับ build image ของ frontend และ backend
+
+ใช้ Docker Compose หรือ platform service orchestration สำหรับรันระบบ
+
+ลำดับการ Deploy
+ลำดับการ deploy ที่เหมาะสมคือ
+
+Deploy Database
+
+สร้าง MySQL service หรือ database instance
+
+กำหนด volume / persistent storage สำหรับข้อมูล
+
+ตั้งค่า username, password, database name และ network access
+
+ปิด public access ของ database และเปิดให้เชื่อมต่อได้เฉพาะ backend
+
+Run Database Migration
+
+รัน migration เพื่อสร้าง schema ของระบบ
+
+ตัวอย่าง env ที่ใช้
+
+```text
 AUTO_MIGRATE=true
-
 MOCKDATA=true
+```
 
-ส่วน frontend สามารถกำหนด backend URL ผ่าน
+Deploy Backend
 
-VITE_API_BASE_URL=https://<backend-domain>/api
+build backend image จาก source code
 
-การเข้าถึงระบบหลัง Deploy
+inject environment variables เช่น
 
-Frontend ใช้สำหรับเข้าใช้งานระบบผ่าน browser
+database connection
 
-Backend สามารถเรียกใช้งาน API ได้โดยตรง
+app host / port
 
-Swagger UI สามารถเข้าผ่าน /swagger
+API prefix
 
-OpenAPI spec สามารถเข้าผ่าน /swagger/openapi.yaml
+CORS settings
+
+start backend service
+
+ตรวจสอบ health check เช่น /healthz
+
+ตรวจสอบว่า Swagger เปิดได้ที่ /swagger
+
+Deploy Frontend
+
+build frontend โดยกำหนด VITE_API_BASE_URL ให้ชี้ไปยัง backend production
+
+นำ build output ไป serve ผ่าน Nginx
+
+เปิด public domain สำหรับ frontend
+
+ทดสอบว่า frontend สามารถเรียก backend API ได้ถูกต้อง
+
+ตัวอย่าง Flow ของการ Deploy
+
+1. Push code ไปยัง Git repository
+
+2. CI/CD pipeline หรือ deploy process ทำการ build image
+
+3. Deploy database และตรวจสอบ connectivity
+
+4. Run migration
+
+5. Deploy backend และตรวจสอบ health check
+
+6. Deploy frontend
+
+7. Verify end-to-end flow ของระบบ
+
+Environment Variables ที่สำคัญ
+
+ฝั่ง backend
+
+```text
+DATABASE_URL หรือ DATABASE_DSN
+APP_HOST
+APP_PORT
+```
+
+AUTO_MIGRATE
+
+MOCKDATA
+
+ฝั่ง frontend
+
+VITE_API_BASE_URL
+
+การตรวจสอบหลัง Deploy
+หลัง deploy ควรตรวจสอบอย่างน้อยดังนี้
+
+frontend เปิดหน้าแรกได้
+
+หน้า /manage ใช้งานได้
+
+backend API ตอบกลับปกติ
+
+Swagger ใช้งานได้
+
+migration ถูก apply ครบ
+
+frontend เรียกรูปและ tag จาก backend ได้จริง
+
+# Server Specifications
+
+Server Specifications สำหรับ Production
+
+สำหรับ production environment ของระบบนี้ แนะนำให้เริ่มต้นด้วยสถาปัตยกรรมขนาดเล็กถึงกลาง โดยแยก frontend, backend และ database ออกจากกันอย่างชัดเจน เพื่อให้ดูแลง่ายและสามารถขยายระบบในอนาคตได้
+
+สเปกเริ่มต้นที่เหมาะสมมีดังนี้
+
+Frontend Server
+
+1 vCPU
+
+1-2 GB RAM
+
+ใช้สำหรับ serve static asset ผ่าน Nginx
+
+ภาระโหลดต่ำเมื่อเทียบกับ backend เพราะไม่มี business logic หนัก
+
+Backend Server
+
+2 vCPU
+
+2-4 GB RAM
+
+ใช้รัน Go Fiber API
+
+รองรับการประมวลผล request จาก frontend, query database, filter รูปภาพ และจัดการ CRUD operation
+
+Database Server
+
+2 vCPU
+
+4 GB RAM
+
+40-80 GB SSD
+
+ใช้ MySQL 8
+
+ควรใช้ SSD เพื่อให้ query และ index access มีประสิทธิภาพดีขึ้น
+
+ถ้า deploy บน platform เดียว เช่น Railway หรือ PaaS อื่น อาจ map เป็น 3 services คือ
+
+frontend service
+
+backend service
+
+mysql service
+
+OS / Software Version
+สำหรับ production stack แนะนำดังนี้
+
+OS: Ubuntu Server 22.04 LTS
+
+Frontend Runtime: Nginx 1.24+
+
+Backend Runtime: Go 1.24+
+
+Database: MySQL 8.0
+
+Container Runtime: Docker Engine 24+
+
+Container Orchestration (lightweight): Docker Compose v2
+
+CI/CD: GitHub Actions
+
+TLS / HTTPS: ใช้ managed TLS ของ platform หรือ reverse proxy ที่รองรับ HTTPS
+
+แนวทางการรองรับ Load
+สำหรับระบบ image gallery ลักษณะนี้ ภาระโหลดหลักจะอยู่ที่
+
+การโหลดหน้า gallery
+
+การเรียก GET /api/images
+
+การ filter ด้วย tag
+
+การ scroll เพื่อโหลดรูปเพิ่ม
+
+การอ่านข้อมูลมากกว่าการเขียนข้อมูล
+
+ลักษณะโหลดของระบบจึงเป็น read-heavy workload มากกว่า write-heavy workload
+ดังนั้นการออกแบบในระยะแรกควรเน้น
+
+query ที่มี index เหมาะสม
+
+จำกัดจำนวนข้อมูลต่อ request ด้วย limit
+
+ใช้ cursor pagination แทน offset pagination
+
+แยก frontend เป็น static service เพื่อให้ backend รับเฉพาะ API traffic
+
+# Current Stack
+
+Stack
+
+Frontend:
+
+- `React 18.3.1`
+
+- `Vite 5.4.21`
+
+- `TypeScript 5.6.3`
+
+- `Tailwind CSS 3.4.15`
+
+- `react-router-dom 6.28.x`
+
+- `masonry-layout 4.2.2`
+
+- `imagesloaded 5.0.0`
+
+Backend:
+
+- `Go 1.26`
+
+- `Fiber v2.52.9`
+
+- `go-sql-driver/mysql 1.9.3`
+
+Database:
+
+- `MySQL 8.4`
+
+Frontend runtime image:
+
+- `nginx:1.27-alpine`
+
+Backend runtime image:
+
+- `alpine:3.21`
+
+Backend build image:
+
+- `golang:1.26-alpine`
+
+Containerization:
+
+- `Docker`
+
+- `Dockerfile`
+
+Local orchestration:
+
+- `Docker Compose`
+
+Current cloud deployment target:
+
+- `Railway`
+
+Demo image source:
+
+- `placehold.co`
