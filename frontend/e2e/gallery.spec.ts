@@ -11,7 +11,7 @@ test('filters gallery items by tag and opens manage page', async ({ page }) => {
   await expect(page.getByText('Forest Path')).toBeVisible();
   await expect(page.getByText('City Glow')).toBeVisible();
 
-  await page.getByRole('button', { name: 'All Tags' }).click();
+  await page.getByRole('button', { name: 'Tags Filter' }).click();
 
   const tagModal = page.getByTestId('gallery-tag-modal');
   await expect(tagModal).toBeVisible();

@@ -63,7 +63,7 @@ function ImageCard({
               <p className="text-xs uppercase tracking-[0.3em] text-paper/78">
                 {image.width && image.height ? `${image.width} x ${image.height}` : 'Open format'}
               </p>
-              <span className="max-w-full truncate rounded-full border border-white/40 bg-white/78 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-ink backdrop-blur-xl">
+              <span className="max-w-full truncate rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-xl">
                 {image.source || 'gallery'}
               </span>
             </div>
@@ -470,7 +470,7 @@ export default function GalleryPage() {
                     onClick={handleOpenTagModal}
                     className={`tag-chip ${isTagModalOpen ? 'tag-chip-active' : ''}`}
                   >
-                    All Tags
+                    Tags Filter
                   </button>
                 ) : null}
               </div>
