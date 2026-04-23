@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -37,6 +38,10 @@ func Error(c *fiber.Ctx, err error) error {
 	case errors.Is(err, apperrors.ErrConflict):
 		status = fiber.StatusConflict
 		message = err.Error()
+	}
+
+	if status >= fiber.StatusInternalServerError {
+		log.Printf("http error: %v", err)
 	}
 
 	return c.Status(status).JSON(fiber.Map{"error": message})

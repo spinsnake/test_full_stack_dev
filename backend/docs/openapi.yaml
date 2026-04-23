@@ -6,8 +6,8 @@ info:
     REST API for the full-stack developer test.
     The API manages images, tags, and tag-to-image assignments for an image gallery.
 servers:
-  - url: http://localhost:8080
-    description: Local development
+  - url: /
+    description: Current host
 tags:
   - name: Health
   - name: Images

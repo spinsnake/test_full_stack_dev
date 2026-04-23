@@ -84,7 +84,7 @@ func loadDatabaseDSN() (string, error) {
 
 func normalizeDatabaseDSN(raw string) (string, error) {
 	if !strings.HasPrefix(raw, "mysql://") {
-		return raw, nil
+		return ensureRawMySQLDSNDefaults(raw), nil
 	}
 
 	parsed, err := url.Parse(raw)
@@ -122,6 +122,33 @@ func normalizeDatabaseDSN(raw string) (string, error) {
 		database,
 		params.Encode(),
 	), nil
+}
+
+func ensureRawMySQLDSNDefaults(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return trimmed
+	}
+
+	if !strings.Contains(trimmed, "?") {
+		return trimmed + "?parseTime=true&loc=Local&charset=utf8mb4"
+	}
+
+	prefix, query, found := strings.Cut(trimmed, "?")
+	if !found {
+		return trimmed
+	}
+
+	params, err := url.ParseQuery(query)
+	if err != nil {
+		if strings.Contains(trimmed, "parseTime=") {
+			return trimmed
+		}
+		return trimmed + "&parseTime=true&loc=Local&charset=utf8mb4"
+	}
+
+	applyDefaultMySQLParams(params)
+	return prefix + "?" + params.Encode()
 }
 
 func buildMySQLDSN() string {
