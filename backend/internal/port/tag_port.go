@@ -12,7 +12,7 @@ type TagRepo interface {
 	List(ctx context.Context) ([]entities.Tag, error)
 	Update(ctx context.Context, id uint64, input entities.UpdateTagInput) (entities.Tag, error)
 	SoftDelete(ctx context.Context, id uint64) error
-	ExistsActive(ctx context.Context, id uint64) (bool, error)
+	Exists(ctx context.Context, id uint64) (bool, error)
 }
 
 type TagService interface {

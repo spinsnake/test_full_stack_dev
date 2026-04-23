@@ -10,7 +10,7 @@ export type Tag = {
   id: number;
   name: string;
   slug: string;
-  is_active: boolean;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -29,7 +29,7 @@ export type ImageItem = {
   height?: number | null;
   alt_text?: string | null;
   source?: string | null;
-  is_active: boolean;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
   tags: ImageTag[];

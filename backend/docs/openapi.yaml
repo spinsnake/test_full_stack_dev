@@ -34,7 +34,7 @@ paths:
       tags: [Images]
       summary: List images
       description: |
-        Returns active images ordered by newest first.
+        Returns non-deleted images ordered by newest first.
         Supports cursor-based pagination and optional tag filtering.
       parameters:
         - in: query
@@ -388,8 +388,6 @@ components:
           type: string
         slug:
           type: string
-        is_active:
-          type: boolean
         deleted_at:
           type: string
           format: date-time
@@ -400,7 +398,7 @@ components:
         updated_at:
           type: string
           format: date-time
-      required: [id, name, slug, is_active, created_at, updated_at]
+      required: [id, name, slug, created_at, updated_at]
     Image:
       type: object
       properties:
@@ -426,8 +424,6 @@ components:
         source:
           type: string
           nullable: true
-        is_active:
-          type: boolean
         deleted_at:
           type: string
           format: date-time
@@ -442,7 +438,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TagSummary"
-      required: [id, image_url, is_active, created_at, updated_at]
+      required: [id, image_url, created_at, updated_at]
     CreateImageInput:
       type: object
       properties:

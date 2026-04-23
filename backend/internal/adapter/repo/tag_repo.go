@@ -28,9 +28,8 @@ func (r *TagRepo) Create(ctx context.Context, input entities.CreateTagInput) (en
 		INSERT INTO tags (
 			name,
 			slug,
-			is_active,
 			deleted_at
-		) VALUES (?, ?, 1, NULL)
+		) VALUES (?, ?, NULL)
 	`
 
 	result, err := r.db.ExecContext(ctx, query, input.Name, input.Slug)
@@ -52,12 +51,11 @@ func (r *TagRepo) GetByID(ctx context.Context, id uint64) (entities.Tag, error) 
 			id,
 			name,
 			slug,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM tags
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+		WHERE id = ? AND deleted_at IS NULL
 	`
 
 	row := r.db.QueryRowContext(ctx, query, id)
@@ -78,12 +76,11 @@ func (r *TagRepo) List(ctx context.Context) ([]entities.Tag, error) {
 			id,
 			name,
 			slug,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM tags
-		WHERE deleted_at IS NULL AND is_active = 1
+		WHERE deleted_at IS NULL
 		ORDER BY name ASC
 	`
 
@@ -128,7 +125,7 @@ func (r *TagRepo) Update(ctx context.Context, id uint64, input entities.UpdateTa
 
 	args = append(args, id)
 	query := fmt.Sprintf(
-		"UPDATE tags SET %s WHERE id = ? AND deleted_at IS NULL AND is_active = 1",
+		"UPDATE tags SET %s WHERE id = ? AND deleted_at IS NULL",
 		strings.Join(setParts, ", "),
 	)
 
@@ -151,9 +148,8 @@ func (r *TagRepo) Update(ctx context.Context, id uint64, input entities.UpdateTa
 func (r *TagRepo) SoftDelete(ctx context.Context, id uint64) error {
 	query := `
 		UPDATE tags
-		SET is_active = 0,
-		    deleted_at = CURRENT_TIMESTAMP(3)
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+		SET deleted_at = CURRENT_TIMESTAMP(3)
+		WHERE id = ? AND deleted_at IS NULL
 	`
 
 	result, err := r.db.ExecContext(ctx, query, id)
@@ -172,12 +168,12 @@ func (r *TagRepo) SoftDelete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *TagRepo) ExistsActive(ctx context.Context, id uint64) (bool, error) {
+func (r *TagRepo) Exists(ctx context.Context, id uint64) (bool, error) {
 	query := `
 		SELECT EXISTS(
 			SELECT 1
 			FROM tags
-			WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+			WHERE id = ? AND deleted_at IS NULL
 		)
 	`
 
@@ -209,7 +205,6 @@ func scanTag(scanner interface{ Scan(dest ...any) error }) (entities.Tag, error)
 		&tag.ID,
 		&tag.Name,
 		&tag.Slug,
-		&tag.IsActive,
 		&deletedAt,
 		&createdAt,
 		&updatedAt,

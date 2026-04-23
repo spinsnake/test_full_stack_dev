@@ -28,7 +28,7 @@ func (s *ImageTagService) Attach(ctx context.Context, imageID uint64, input enti
 		return entities.ImageTagAssignment{}, apperrors.NewInvalidInput("tag_id is required")
 	}
 
-	imageExists, err := s.imageRepo.ExistsActive(ctx, imageID)
+	imageExists, err := s.imageRepo.Exists(ctx, imageID)
 	if err != nil {
 		return entities.ImageTagAssignment{}, err
 	}
@@ -36,7 +36,7 @@ func (s *ImageTagService) Attach(ctx context.Context, imageID uint64, input enti
 		return entities.ImageTagAssignment{}, fmt.Errorf("%w: image %d", apperrors.ErrNotFound, imageID)
 	}
 
-	tagExists, err := s.tagRepo.ExistsActive(ctx, input.TagID)
+	tagExists, err := s.tagRepo.Exists(ctx, input.TagID)
 	if err != nil {
 		return entities.ImageTagAssignment{}, err
 	}

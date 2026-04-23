@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/example/test-full-stack-developer/backend/internal/apperrors"
 	"github.com/example/test-full-stack-developer/backend/internal/entities"
-	sqlmock "github.com/DATA-DOG/go-sqlmock"
 )
 
 func TestImageRepoCreate(t *testing.T) {
@@ -25,9 +25,8 @@ func TestImageRepoCreate(t *testing.T) {
 			height,
 			alt_text,
 			source,
-			is_active,
 			deleted_at
-		) VALUES (?, ?, ?, ?, ?, ?, 1, NULL)`,
+		) VALUES (?, ?, ?, ?, ?, ?, NULL)`,
 	)).
 		WithArgs("https://placehold.co/1200x900?text=Created", nil, nil, nil, nil, nil).
 		WillReturnResult(sqlmock.NewResult(7, 1))
@@ -41,16 +40,15 @@ func TestImageRepoCreate(t *testing.T) {
 			height,
 			alt_text,
 			source,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM images
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs(uint64(7)).
 		WillReturnRows(sqlmock.NewRows(imageColumns).AddRow(
-			imageValues(7, "https://placehold.co/1200x900?text=Created", nil, nil, nil, nil, nil, true, nil, now, now)...,
+			imageValues(7, "https://placehold.co/1200x900?text=Created", nil, nil, nil, nil, nil, nil, now, now)...,
 		))
 
 	mock.ExpectQuery(imageHydrateTagsQuery(1)).
@@ -88,12 +86,11 @@ func TestImageRepoGetByIDNotFound(t *testing.T) {
 			height,
 			alt_text,
 			source,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM images
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs(uint64(42)).
 		WillReturnRows(sqlmock.NewRows(imageColumns))
@@ -124,16 +121,13 @@ func TestImageRepoListWithTagAndCursor(t *testing.T) {
 			i.height,
 			i.alt_text,
 			i.source,
-			i.is_active,
 			i.deleted_at,
 			i.created_at,
 			i.updated_at
 		FROM images i
 		INNER JOIN image_tags it ON it.image_id = i.id
 		INNER JOIN tags t ON t.id = it.tag_id
-		WHERE i.is_active = 1
-		  AND i.deleted_at IS NULL
-		  AND t.is_active = 1
+		WHERE i.deleted_at IS NULL
 		  AND t.deleted_at IS NULL
 		  AND t.slug = ?
 		  AND i.id < ?
@@ -142,8 +136,8 @@ func TestImageRepoListWithTagAndCursor(t *testing.T) {
 		WithArgs("nature", uint64(10), 2).
 		WillReturnRows(
 			sqlmock.NewRows(imageColumns).
-				AddRow(imageValues(9, "https://placehold.co/1200x900?text=9", nil, testInt(1200), testInt(900), testString("Nine"), testString("seed"), true, nil, now, now)...).
-				AddRow(imageValues(8, "https://placehold.co/900x1200?text=8", testString("https://placehold.co/400x300?text=8"), testInt(900), testInt(1200), testString("Eight"), testString("seed"), true, nil, now, now)...),
+				AddRow(imageValues(9, "https://placehold.co/1200x900?text=9", nil, testInt(1200), testInt(900), testString("Nine"), testString("seed"), nil, now, now)...).
+				AddRow(imageValues(8, "https://placehold.co/900x1200?text=8", testString("https://placehold.co/400x300?text=8"), testInt(900), testInt(1200), testString("Eight"), testString("seed"), nil, now, now)...),
 		)
 
 	mock.ExpectQuery(imageHydrateTagsQuery(2)).
@@ -179,7 +173,7 @@ func TestImageRepoUpdateNotFound(t *testing.T) {
 	repo := &ImageRepo{db: db}
 
 	mock.ExpectExec(mustPattern(
-		`UPDATE images SET alt_text = ? WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		`UPDATE images SET alt_text = ? WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs("updated caption", uint64(99)).
 		WillReturnResult(sqlmock.NewResult(0, 0))
@@ -198,9 +192,8 @@ func TestImageRepoSoftDeleteNotFound(t *testing.T) {
 
 	mock.ExpectExec(mustPattern(
 		`UPDATE images
-		SET is_active = 0,
-		    deleted_at = CURRENT_TIMESTAMP(3)
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		SET deleted_at = CURRENT_TIMESTAMP(3)
+		WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs(uint64(11)).
 		WillReturnResult(sqlmock.NewResult(0, 0))
@@ -211,7 +204,7 @@ func TestImageRepoSoftDeleteNotFound(t *testing.T) {
 	}
 }
 
-func TestImageRepoExistsActive(t *testing.T) {
+func TestImageRepoExists(t *testing.T) {
 	db, mock := newSQLMock(t)
 	repo := &ImageRepo{db: db}
 
@@ -219,15 +212,15 @@ func TestImageRepoExistsActive(t *testing.T) {
 		`SELECT EXISTS(
 			SELECT 1
 			FROM images
-			WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+			WHERE id = ? AND deleted_at IS NULL
 		)`,
 	)).
 		WithArgs(uint64(5)).
 		WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 
-	exists, err := repo.ExistsActive(context.Background(), 5)
+	exists, err := repo.Exists(context.Background(), 5)
 	if err != nil {
-		t.Fatalf("exists active: %v", err)
+		t.Fatalf("exists: %v", err)
 	}
 	if !exists {
 		t.Fatal("expected image to exist")

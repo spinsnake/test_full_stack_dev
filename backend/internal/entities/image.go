@@ -10,7 +10,6 @@ type Image struct {
 	Height       *int         `json:"height,omitempty"`
 	AltText      *string      `json:"alt_text,omitempty"`
 	Source       *string      `json:"source,omitempty"`
-	IsActive     bool         `json:"is_active"`
 	DeletedAt    *time.Time   `json:"deleted_at,omitempty"`
 	CreatedAt    time.Time    `json:"created_at"`
 	UpdatedAt    time.Time    `json:"updated_at"`

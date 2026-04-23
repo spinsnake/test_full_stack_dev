@@ -51,7 +51,7 @@ function createInitialState(): MockState {
       id: 1,
       name: 'Nature',
       slug: 'nature',
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
     },
@@ -59,7 +59,7 @@ function createInitialState(): MockState {
       id: 2,
       name: 'City',
       slug: 'city',
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
     },
@@ -67,7 +67,7 @@ function createInitialState(): MockState {
       id: 3,
       name: 'Sports',
       slug: 'sports',
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
     },
@@ -82,7 +82,7 @@ function createInitialState(): MockState {
       height: 1500,
       alt_text: 'Forest Path',
       source: 'mock-seed',
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
       tagIDs: [1],
@@ -95,7 +95,7 @@ function createInitialState(): MockState {
       height: 900,
       alt_text: 'City Glow',
       source: 'mock-seed',
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
       tagIDs: [2],
@@ -108,7 +108,7 @@ function createInitialState(): MockState {
       height: 1350,
       alt_text: 'Courtside Moment',
       source: 'mock-seed',
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
       tagIDs: [3],
@@ -124,12 +124,12 @@ function createInitialState(): MockState {
 }
 
 function listActiveTags(state: MockState) {
-  return [...state.tags].filter((tag) => tag.is_active).sort((left, right) => right.id - left.id);
+  return [...state.tags].filter((tag) => tag.deleted_at == null).sort((left, right) => right.id - left.id);
 }
 
 function serializeImage(record: MockImageRecord, state: MockState): ImageItem {
   const imageTags: ImageTag[] = record.tagIDs
-    .map((tagID) => state.tags.find((tag) => tag.id === tagID && tag.is_active))
+    .map((tagID) => state.tags.find((tag) => tag.id === tagID && tag.deleted_at == null))
     .filter((tag): tag is Tag => Boolean(tag))
     .map((tag) => ({
       id: tag.id,
@@ -148,7 +148,7 @@ function listImages(state: MockState, options?: { cursor?: number | null; limit?
 
   const activeTags = new Set(listActiveTags(state).map((item) => item.id));
   const filtered = [...state.images]
-    .filter((image) => image.is_active)
+    .filter((image) => image.deleted_at == null)
     .filter((image) => image.tagIDs.every((tagID) => activeTags.has(tagID)))
     .sort((left, right) => right.id - left.id)
     .filter((image) => (cursor ? image.id < cursor : true))
@@ -158,7 +158,7 @@ function listImages(state: MockState, options?: { cursor?: number | null; limit?
       }
 
       return image.tagIDs.some((tagID) => {
-        const tagRecord = state.tags.find((entry) => entry.id === tagID && entry.is_active);
+        const tagRecord = state.tags.find((entry) => entry.id === tagID && entry.deleted_at == null);
         return tagRecord?.slug === tag;
       });
     })
@@ -213,7 +213,7 @@ async function handleRoute(route: Route, state: MockState) {
       height: payload.height ?? null,
       alt_text: payload.alt_text ?? null,
       source: payload.source ?? null,
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
       tagIDs: [],
@@ -230,7 +230,7 @@ async function handleRoute(route: Route, state: MockState) {
       id: state.nextTagID++,
       name: payload.name,
       slug,
-      is_active: true,
+      deleted_at: null,
       created_at: timestamp,
       updated_at: timestamp,
     };
@@ -242,7 +242,7 @@ async function handleRoute(route: Route, state: MockState) {
   const imageMatch = path.match(/^\/api\/images\/(\d+)$/);
   if (imageMatch) {
     const imageID = Number(imageMatch[1]);
-    const image = state.images.find((entry) => entry.id === imageID && entry.is_active);
+    const image = state.images.find((entry) => entry.id === imageID && entry.deleted_at == null);
 
     if (!image) {
       return fulfillJSON(route, { error: 'Image not found.' }, 404);
@@ -275,7 +275,8 @@ async function handleRoute(route: Route, state: MockState) {
     }
 
     if (method === 'DELETE') {
-      image.is_active = false;
+      image.deleted_at = timestamp;
+      image.updated_at = timestamp;
       return fulfillJSON(route, { message: `Image #${imageID} deleted.` });
     }
   }
@@ -283,7 +284,7 @@ async function handleRoute(route: Route, state: MockState) {
   const tagMatch = path.match(/^\/api\/tags\/(\d+)$/);
   if (tagMatch) {
     const tagID = Number(tagMatch[1]);
-    const tag = state.tags.find((entry) => entry.id === tagID && entry.is_active);
+    const tag = state.tags.find((entry) => entry.id === tagID && entry.deleted_at == null);
 
     if (!tag) {
       return fulfillJSON(route, { error: 'Tag not found.' }, 404);
@@ -306,7 +307,8 @@ async function handleRoute(route: Route, state: MockState) {
     }
 
     if (method === 'DELETE') {
-      tag.is_active = false;
+      tag.deleted_at = timestamp;
+      tag.updated_at = timestamp;
       state.images.forEach((image) => {
         image.tagIDs = image.tagIDs.filter((imageTagID) => imageTagID !== tagID);
       });
@@ -319,7 +321,7 @@ async function handleRoute(route: Route, state: MockState) {
   if (imageTagMatch) {
     const imageID = Number(imageTagMatch[1]);
     const tagIDFromPath = imageTagMatch[2] ? Number(imageTagMatch[2]) : null;
-    const image = state.images.find((entry) => entry.id === imageID && entry.is_active);
+    const image = state.images.find((entry) => entry.id === imageID && entry.deleted_at == null);
 
     if (!image) {
       return fulfillJSON(route, { error: 'Image not found.' }, 404);
@@ -327,7 +329,7 @@ async function handleRoute(route: Route, state: MockState) {
 
     if (method === 'POST') {
       const payload = await readJSON<AttachTagPayload>(route);
-      const tag = state.tags.find((entry) => entry.id === payload.tag_id && entry.is_active);
+      const tag = state.tags.find((entry) => entry.id === payload.tag_id && entry.deleted_at == null);
 
       if (!tag) {
         return fulfillJSON(route, { error: 'Tag not found.' }, 404);

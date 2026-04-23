@@ -29,9 +29,8 @@ func (r *ImageRepo) Create(ctx context.Context, input entities.CreateImageInput)
 			height,
 			alt_text,
 			source,
-			is_active,
 			deleted_at
-		) VALUES (?, ?, ?, ?, ?, ?, 1, NULL)
+		) VALUES (?, ?, ?, ?, ?, ?, NULL)
 	`
 
 	result, err := r.db.ExecContext(
@@ -66,12 +65,11 @@ func (r *ImageRepo) GetByID(ctx context.Context, id uint64) (entities.Image, err
 			height,
 			alt_text,
 			source,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM images
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+		WHERE id = ? AND deleted_at IS NULL
 	`
 
 	row := r.db.QueryRowContext(ctx, query, id)
@@ -104,7 +102,6 @@ func (r *ImageRepo) List(ctx context.Context, filter entities.ImageListFilter) (
 			i.height,
 			i.alt_text,
 			i.source,
-			i.is_active,
 			i.deleted_at,
 			i.created_at,
 			i.updated_at
@@ -119,13 +116,11 @@ func (r *ImageRepo) List(ctx context.Context, filter entities.ImageListFilter) (
 	}
 
 	queryBuilder.WriteString(`
-		WHERE i.is_active = 1
-		  AND i.deleted_at IS NULL
+		WHERE i.deleted_at IS NULL
 	`)
 
 	if filter.TagSlug != "" {
 		queryBuilder.WriteString(`
-		  AND t.is_active = 1
 		  AND t.deleted_at IS NULL
 		  AND t.slug = ?
 		`)
@@ -205,7 +200,7 @@ func (r *ImageRepo) Update(ctx context.Context, id uint64, input entities.Update
 
 	args = append(args, id)
 	query := fmt.Sprintf(
-		"UPDATE images SET %s WHERE id = ? AND deleted_at IS NULL AND is_active = 1",
+		"UPDATE images SET %s WHERE id = ? AND deleted_at IS NULL",
 		strings.Join(setParts, ", "),
 	)
 
@@ -228,9 +223,8 @@ func (r *ImageRepo) Update(ctx context.Context, id uint64, input entities.Update
 func (r *ImageRepo) SoftDelete(ctx context.Context, id uint64) error {
 	query := `
 		UPDATE images
-		SET is_active = 0,
-		    deleted_at = CURRENT_TIMESTAMP(3)
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+		SET deleted_at = CURRENT_TIMESTAMP(3)
+		WHERE id = ? AND deleted_at IS NULL
 	`
 
 	result, err := r.db.ExecContext(ctx, query, id)
@@ -249,12 +243,12 @@ func (r *ImageRepo) SoftDelete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *ImageRepo) ExistsActive(ctx context.Context, id uint64) (bool, error) {
+func (r *ImageRepo) Exists(ctx context.Context, id uint64) (bool, error) {
 	query := `
 		SELECT EXISTS(
 			SELECT 1
 			FROM images
-			WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+			WHERE id = ? AND deleted_at IS NULL
 		)
 	`
 
@@ -291,7 +285,6 @@ func (r *ImageRepo) hydrateTags(ctx context.Context, images []entities.Image) er
 		FROM image_tags it
 		INNER JOIN tags t ON t.id = it.tag_id
 		WHERE it.image_id IN (%s)
-		  AND t.is_active = 1
 		  AND t.deleted_at IS NULL
 		ORDER BY it.image_id, t.name
 	`, strings.Join(placeholders, ", "))
@@ -344,7 +337,6 @@ func scanImage(scanner interface{ Scan(dest ...any) error }) (entities.Image, er
 		&height,
 		&altText,
 		&source,
-		&image.IsActive,
 		&deletedAt,
 		&createdAt,
 		&updatedAt,

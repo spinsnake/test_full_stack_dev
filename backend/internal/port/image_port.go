@@ -12,7 +12,7 @@ type ImageRepo interface {
 	List(ctx context.Context, filter entities.ImageListFilter) ([]entities.Image, error)
 	Update(ctx context.Context, id uint64, input entities.UpdateImageInput) (entities.Image, error)
 	SoftDelete(ctx context.Context, id uint64) error
-	ExistsActive(ctx context.Context, id uint64) (bool, error)
+	Exists(ctx context.Context, id uint64) (bool, error)
 }
 
 type ImageService interface {

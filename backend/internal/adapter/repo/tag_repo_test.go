@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/example/test-full-stack-developer/backend/internal/apperrors"
 	"github.com/example/test-full-stack-developer/backend/internal/entities"
-	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	mysqlerr "github.com/go-sql-driver/mysql"
 )
 
@@ -20,9 +20,8 @@ func TestTagRepoCreateConflict(t *testing.T) {
 		`INSERT INTO tags (
 			name,
 			slug,
-			is_active,
 			deleted_at
-		) VALUES (?, ?, 1, NULL)`,
+		) VALUES (?, ?, NULL)`,
 	)).
 		WithArgs("Travel", "travel").
 		WillReturnError(&mysqlerr.MySQLError{Number: 1062, Message: "Duplicate entry"})
@@ -43,7 +42,7 @@ func TestTagRepoUpdate(t *testing.T) {
 	now := time.Now().UTC().Truncate(time.Millisecond)
 
 	mock.ExpectExec(mustPattern(
-		`UPDATE tags SET name = ?, slug = ? WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		`UPDATE tags SET name = ?, slug = ? WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs("City", "city", uint64(3)).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -53,16 +52,15 @@ func TestTagRepoUpdate(t *testing.T) {
 			id,
 			name,
 			slug,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM tags
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs(uint64(3)).
 		WillReturnRows(sqlmock.NewRows(tagColumns).AddRow(
-			tagValues(3, "City", "city", true, nil, now, now)...,
+			tagValues(3, "City", "city", nil, now, now)...,
 		))
 
 	tag, err := repo.Update(context.Background(), 3, entities.UpdateTagInput{
@@ -89,18 +87,17 @@ func TestTagRepoList(t *testing.T) {
 			id,
 			name,
 			slug,
-			is_active,
 			deleted_at,
 			created_at,
 			updated_at
 		FROM tags
-		WHERE deleted_at IS NULL AND is_active = 1
+		WHERE deleted_at IS NULL
 		ORDER BY name ASC`,
 	)).
 		WillReturnRows(
 			sqlmock.NewRows(tagColumns).
-				AddRow(tagValues(1, "City", "city", true, nil, now, now)...).
-				AddRow(tagValues(2, "Travel", "travel", true, nil, now, now)...),
+				AddRow(tagValues(1, "City", "city", nil, now, now)...).
+				AddRow(tagValues(2, "Travel", "travel", nil, now, now)...),
 		)
 
 	tags, err := repo.List(context.Background())
@@ -122,9 +119,8 @@ func TestTagRepoSoftDeleteNotFound(t *testing.T) {
 
 	mock.ExpectExec(mustPattern(
 		`UPDATE tags
-		SET is_active = 0,
-		    deleted_at = CURRENT_TIMESTAMP(3)
-		WHERE id = ? AND deleted_at IS NULL AND is_active = 1`,
+		SET deleted_at = CURRENT_TIMESTAMP(3)
+		WHERE id = ? AND deleted_at IS NULL`,
 	)).
 		WithArgs(uint64(8)).
 		WillReturnResult(sqlmock.NewResult(0, 0))
@@ -135,7 +131,7 @@ func TestTagRepoSoftDeleteNotFound(t *testing.T) {
 	}
 }
 
-func TestTagRepoExistsActive(t *testing.T) {
+func TestTagRepoExists(t *testing.T) {
 	db, mock := newSQLMock(t)
 	repo := &TagRepo{db: db}
 
@@ -143,15 +139,15 @@ func TestTagRepoExistsActive(t *testing.T) {
 		`SELECT EXISTS(
 			SELECT 1
 			FROM tags
-			WHERE id = ? AND deleted_at IS NULL AND is_active = 1
+			WHERE id = ? AND deleted_at IS NULL
 		)`,
 	)).
 		WithArgs(uint64(4)).
 		WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 
-	exists, err := repo.ExistsActive(context.Background(), 4)
+	exists, err := repo.Exists(context.Background(), 4)
 	if err != nil {
-		t.Fatalf("exists active: %v", err)
+		t.Fatalf("exists: %v", err)
 	}
 	if !exists {
 		t.Fatal("expected tag to exist")

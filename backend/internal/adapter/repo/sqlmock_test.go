@@ -21,7 +21,6 @@ var (
 		"height",
 		"alt_text",
 		"source",
-		"is_active",
 		"deleted_at",
 		"created_at",
 		"updated_at",
@@ -30,7 +29,6 @@ var (
 		"id",
 		"name",
 		"slug",
-		"is_active",
 		"deleted_at",
 		"created_at",
 		"updated_at",
@@ -66,7 +64,6 @@ func imageHydrateTagsQuery(imageCount int) string {
 		FROM image_tags it
 		INNER JOIN tags t ON t.id = it.tag_id
 		WHERE it.image_id IN (%s)
-		  AND t.is_active = 1
 		  AND t.deleted_at IS NULL
 		ORDER BY it.image_id, t.name`,
 		placeholders,
@@ -81,7 +78,6 @@ func imageValues(
 	height *int,
 	altText *string,
 	source *string,
-	isActive bool,
 	deletedAt *time.Time,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -94,7 +90,6 @@ func imageValues(
 		nilInt(height),
 		nilString(altText),
 		nilString(source),
-		isActive,
 		nilTime(deletedAt),
 		createdAt,
 		updatedAt,
@@ -105,7 +100,6 @@ func tagValues(
 	id int64,
 	name string,
 	slug string,
-	isActive bool,
 	deletedAt *time.Time,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -114,7 +108,6 @@ func tagValues(
 		id,
 		name,
 		slug,
-		isActive,
 		nilTime(deletedAt),
 		createdAt,
 		updatedAt,

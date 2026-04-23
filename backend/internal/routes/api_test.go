@@ -248,7 +248,6 @@ func (r *memoryImageRepo) Create(_ context.Context, input entities.CreateImageIn
 		Height:       cloneIntPtr(input.Height),
 		AltText:      cloneStringPtr(input.AltText),
 		Source:       cloneStringPtr(input.Source),
-		IsActive:     true,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 		Tags:         []entities.TagSummary{},
@@ -265,7 +264,7 @@ func (r *memoryImageRepo) GetByID(_ context.Context, id uint64) (entities.Image,
 	defer r.store.mu.Unlock()
 
 	image, ok := r.store.images[id]
-	if !ok || !image.IsActive || image.DeletedAt != nil {
+	if !ok || image.DeletedAt != nil {
 		return entities.Image{}, fmt.Errorf("%w: image %d", apperrors.ErrNotFound, id)
 	}
 
@@ -278,7 +277,7 @@ func (r *memoryImageRepo) List(_ context.Context, filter entities.ImageListFilte
 
 	images := make([]entities.Image, 0, len(r.store.images))
 	for _, image := range r.store.images {
-		if !image.IsActive || image.DeletedAt != nil {
+		if image.DeletedAt != nil {
 			continue
 		}
 		if filter.Cursor != nil && image.ID >= *filter.Cursor {
@@ -307,7 +306,7 @@ func (r *memoryImageRepo) Update(_ context.Context, id uint64, input entities.Up
 	defer r.store.mu.Unlock()
 
 	image, ok := r.store.images[id]
-	if !ok || !image.IsActive || image.DeletedAt != nil {
+	if !ok || image.DeletedAt != nil {
 		return entities.Image{}, fmt.Errorf("%w: image %d", apperrors.ErrNotFound, id)
 	}
 
@@ -340,12 +339,11 @@ func (r *memoryImageRepo) SoftDelete(_ context.Context, id uint64) error {
 	defer r.store.mu.Unlock()
 
 	image, ok := r.store.images[id]
-	if !ok || !image.IsActive || image.DeletedAt != nil {
+	if !ok || image.DeletedAt != nil {
 		return fmt.Errorf("%w: image %d", apperrors.ErrNotFound, id)
 	}
 
 	now := time.Now().UTC()
-	image.IsActive = false
 	image.DeletedAt = &now
 	image.UpdatedAt = now
 	r.store.images[id] = image
@@ -353,19 +351,19 @@ func (r *memoryImageRepo) SoftDelete(_ context.Context, id uint64) error {
 	return nil
 }
 
-func (r *memoryImageRepo) ExistsActive(_ context.Context, id uint64) (bool, error) {
+func (r *memoryImageRepo) Exists(_ context.Context, id uint64) (bool, error) {
 	r.store.mu.Lock()
 	defer r.store.mu.Unlock()
 
 	image, ok := r.store.images[id]
-	return ok && image.IsActive && image.DeletedAt == nil, nil
+	return ok && image.DeletedAt == nil, nil
 }
 
 func (r *memoryImageRepo) imageHasTagSlug(imageID uint64, slug string) bool {
 	assignments := r.store.assignments[imageID]
 	for tagID := range assignments {
 		tag, ok := r.store.tags[tagID]
-		if !ok || !tag.IsActive || tag.DeletedAt != nil {
+		if !ok || tag.DeletedAt != nil {
 			continue
 		}
 		if strings.EqualFold(tag.Slug, slug) {
@@ -380,7 +378,7 @@ func (r *memoryImageRepo) decorateImage(image entities.Image) entities.Image {
 	tags := make([]entities.TagSummary, 0)
 	for tagID := range r.store.assignments[image.ID] {
 		tag, ok := r.store.tags[tagID]
-		if !ok || !tag.IsActive || tag.DeletedAt != nil {
+		if !ok || tag.DeletedAt != nil {
 			continue
 		}
 		tags = append(tags, entities.TagSummary{
@@ -401,7 +399,7 @@ func (r *memoryTagRepo) Create(_ context.Context, input entities.CreateTagInput)
 	defer r.store.mu.Unlock()
 
 	for _, existing := range r.store.tags {
-		if !existing.IsActive || existing.DeletedAt != nil {
+		if existing.DeletedAt != nil {
 			continue
 		}
 		if strings.EqualFold(existing.Name, input.Name) || strings.EqualFold(existing.Slug, valueOrEmpty(input.Slug)) {
@@ -414,7 +412,6 @@ func (r *memoryTagRepo) Create(_ context.Context, input entities.CreateTagInput)
 		ID:        r.store.nextTagID,
 		Name:      input.Name,
 		Slug:      valueOrEmpty(input.Slug),
-		IsActive:  true,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -430,7 +427,7 @@ func (r *memoryTagRepo) GetByID(_ context.Context, id uint64) (entities.Tag, err
 	defer r.store.mu.Unlock()
 
 	tag, ok := r.store.tags[id]
-	if !ok || !tag.IsActive || tag.DeletedAt != nil {
+	if !ok || tag.DeletedAt != nil {
 		return entities.Tag{}, fmt.Errorf("%w: tag %d", apperrors.ErrNotFound, id)
 	}
 
@@ -443,7 +440,7 @@ func (r *memoryTagRepo) List(_ context.Context) ([]entities.Tag, error) {
 
 	tags := make([]entities.Tag, 0, len(r.store.tags))
 	for _, tag := range r.store.tags {
-		if !tag.IsActive || tag.DeletedAt != nil {
+		if tag.DeletedAt != nil {
 			continue
 		}
 		tags = append(tags, cloneTag(tag))
@@ -461,7 +458,7 @@ func (r *memoryTagRepo) Update(_ context.Context, id uint64, input entities.Upda
 	defer r.store.mu.Unlock()
 
 	tag, ok := r.store.tags[id]
-	if !ok || !tag.IsActive || tag.DeletedAt != nil {
+	if !ok || tag.DeletedAt != nil {
 		return entities.Tag{}, fmt.Errorf("%w: tag %d", apperrors.ErrNotFound, id)
 	}
 
@@ -475,7 +472,7 @@ func (r *memoryTagRepo) Update(_ context.Context, id uint64, input entities.Upda
 	}
 
 	for _, existing := range r.store.tags {
-		if existing.ID == id || !existing.IsActive || existing.DeletedAt != nil {
+		if existing.ID == id || existing.DeletedAt != nil {
 			continue
 		}
 		if strings.EqualFold(existing.Name, nextName) || strings.EqualFold(existing.Slug, nextSlug) {
@@ -496,12 +493,11 @@ func (r *memoryTagRepo) SoftDelete(_ context.Context, id uint64) error {
 	defer r.store.mu.Unlock()
 
 	tag, ok := r.store.tags[id]
-	if !ok || !tag.IsActive || tag.DeletedAt != nil {
+	if !ok || tag.DeletedAt != nil {
 		return fmt.Errorf("%w: tag %d", apperrors.ErrNotFound, id)
 	}
 
 	now := time.Now().UTC()
-	tag.IsActive = false
 	tag.DeletedAt = &now
 	tag.UpdatedAt = now
 	r.store.tags[id] = tag
@@ -509,12 +505,12 @@ func (r *memoryTagRepo) SoftDelete(_ context.Context, id uint64) error {
 	return nil
 }
 
-func (r *memoryTagRepo) ExistsActive(_ context.Context, id uint64) (bool, error) {
+func (r *memoryTagRepo) Exists(_ context.Context, id uint64) (bool, error) {
 	r.store.mu.Lock()
 	defer r.store.mu.Unlock()
 
 	tag, ok := r.store.tags[id]
-	return ok && tag.IsActive && tag.DeletedAt == nil, nil
+	return ok && tag.DeletedAt == nil, nil
 }
 
 func (r *memoryImageTagRepo) Attach(_ context.Context, imageID, tagID uint64) error {
