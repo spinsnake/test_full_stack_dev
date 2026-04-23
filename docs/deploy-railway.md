@@ -44,6 +44,7 @@ Set these in the backend service:
 - `CORS_ALLOW_ORIGINS=*`
 - `DEFAULT_PAGE_LIMIT=12`
 - `MAX_PAGE_LIMIT=60`
+- `MOCKDATA=true`
 - `DB_MAX_OPEN_CONNS=25`
 - `DB_MAX_IDLE_CONNS=25`
 - `DB_CONN_MAX_LIFETIME_MIN=30`
@@ -54,6 +55,8 @@ Notes:
 
 - The app now accepts `DATABASE_URL` and Railway-style MySQL variables.
 - The app also accepts Railway's `PORT` automatically, so you do not need to hardcode a deploy port.
+- `MOCKDATA=true` runs `000002_seed_demo_data.up.sql` once after schema migrations.
+- `MOCKDATA=false` applies schema migrations only.
 
 ### Backend Deploy Settings
 

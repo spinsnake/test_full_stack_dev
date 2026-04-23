@@ -123,6 +123,13 @@ Run from the repository root:
 powershell -ExecutionPolicy Bypass -File backend/scripts/migrate.ps1 up
 ```
 
+Or use the app-backed migration command when you want `MOCKDATA=true/false` to control demo seeding:
+
+```powershell
+cd backend
+go run ./cmd/api migrate up
+```
+
 Seed data currently includes:
 
 - 100 images from placehold.co

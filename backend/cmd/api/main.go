@@ -33,7 +33,7 @@ func main() {
 			log.Fatalf("unsupported migrate action: %s", migrateAction)
 		}
 
-		if err := infra.RunMigrations(db, ""); err != nil {
+		if err := infra.RunMigrations(db, "", cfg.MockData); err != nil {
 			log.Fatalf("run migrations: %v", err)
 		}
 

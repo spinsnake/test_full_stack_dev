@@ -25,6 +25,7 @@ type Config struct {
 	CORSAllowCredentials bool
 	DefaultPageLimit     int
 	MaxPageLimit         int
+	MockData             bool
 	DatabaseDSN          string
 	DBMaxOpenConns       int
 	DBMaxIdleConns       int
@@ -49,6 +50,7 @@ func Load() (Config, error) {
 		CORSAllowCredentials: getEnvBool("CORS_ALLOW_CREDENTIALS", false),
 		DefaultPageLimit:     getEnvInt("DEFAULT_PAGE_LIMIT", 12),
 		MaxPageLimit:         getEnvInt("MAX_PAGE_LIMIT", 60),
+		MockData:             getEnvAnyBool([]string{"MOCKDATA", "MOCK_DATA"}, false),
 		DBMaxOpenConns:       getEnvInt("DB_MAX_OPEN_CONNS", 25),
 		DBMaxIdleConns:       getEnvInt("DB_MAX_IDLE_CONNS", 25),
 		DBConnMaxLifetime:    time.Duration(getEnvInt("DB_CONN_MAX_LIFETIME_MIN", 30)) * time.Minute,
@@ -225,6 +227,24 @@ func getEnvBool(key string, fallback bool) bool {
 	}
 
 	return value
+}
+
+func getEnvAnyBool(keys []string, fallback bool) bool {
+	for _, key := range keys {
+		raw := strings.TrimSpace(os.Getenv(key))
+		if raw == "" {
+			continue
+		}
+
+		value, err := strconv.ParseBool(raw)
+		if err != nil {
+			return fallback
+		}
+
+		return value
+	}
+
+	return fallback
 }
 
 func applyDefaultMySQLParams(params url.Values) {
