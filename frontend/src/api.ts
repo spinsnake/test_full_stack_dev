@@ -19,6 +19,13 @@ type FetchImagesOptions = {
   tag?: string;
 };
 
+function normalizeImage(image: ImageItem): ImageItem {
+  return {
+    ...image,
+    tags: Array.isArray(image.tags) ? image.tags : [],
+  };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
   if (!response.ok) {
@@ -55,7 +62,7 @@ export async function fetchTags(): Promise<Tag[]> {
 
 export async function fetchImages(options: FetchImagesOptions = {}): Promise<ImageItem[]> {
   const response = await request<ApiResponse<ImageItem[]>>(buildImagesURL(options));
-  return response.data;
+  return response.data.map(normalizeImage);
 }
 
 export async function fetchAllImages(): Promise<ImageItem[]> {
@@ -85,7 +92,7 @@ export async function createImage(payload: CreateImagePayload): Promise<ImageIte
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return response.data;
+  return normalizeImage(response.data);
 }
 
 export async function updateImage(id: number, payload: UpdateImagePayload): Promise<ImageItem> {
@@ -94,7 +101,7 @@ export async function updateImage(id: number, payload: UpdateImagePayload): Prom
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return response.data;
+  return normalizeImage(response.data);
 }
 
 export async function deleteImage(id: number): Promise<ApiMessageResponse> {

@@ -114,6 +114,7 @@ export default function ManagePage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [imageForm, setImageForm] = useState<ImageFormState>(emptyImageForm);
   const [tagForm, setTagForm] = useState<TagFormState>(emptyTagForm);
+  const [pendingImageTagIDs, setPendingImageTagIDs] = useState<number[]>([]);
   const [tagPickerImageID, setTagPickerImageID] = useState<number | null>(null);
   const [tagPickerSelection, setTagPickerSelection] = useState<number[]>([]);
   const [isBooting, setIsBooting] = useState(true);
@@ -134,7 +135,8 @@ export default function ManagePage() {
         return [] as Tag[];
       }
 
-      const attachedTagIDs = new Set(image.tags.map((tag) => tag.id));
+      const attachedTags = image.tags ?? [];
+      const attachedTagIDs = new Set(attachedTags.map((tag) => tag.id));
       return tags.filter((tag) => !attachedTagIDs.has(tag.id));
     },
     [tags],
@@ -183,6 +185,7 @@ export default function ManagePage() {
 
   const resetImageForm = () => {
     setImageForm(emptyImageForm);
+    setPendingImageTagIDs([]);
   };
 
   const resetTagForm = () => {
@@ -201,6 +204,12 @@ export default function ManagePage() {
       ...current,
       [key]: value ?? '',
     }));
+  };
+
+  const togglePendingImageTagSelection = (tagID: number) => {
+    setPendingImageTagIDs((current) =>
+      current.includes(tagID) ? current.filter((id) => id !== tagID) : [...current, tagID],
+    );
   };
 
   const runMutation = async <T,>(task: () => Promise<T>, successMessage: string) => {
@@ -232,11 +241,25 @@ export default function ManagePage() {
         );
         setImageForm(mapImageToForm(updated));
       } else {
+        const selectedTagIDs = [...pendingImageTagIDs];
         const created = await runMutation(
-          () => createImage(payload as CreateImagePayload),
-          'Image created.',
+          async () => {
+            const image = await createImage(payload as CreateImagePayload);
+
+            if (selectedTagIDs.length > 0) {
+              await Promise.all(
+                selectedTagIDs.map((tagID) => attachTagToImage(image.id, { tag_id: tagID })),
+              );
+            }
+
+            return image;
+          },
+          selectedTagIDs.length > 0
+            ? `Image created with ${selectedTagIDs.length} tag(s).`
+            : 'Image created.',
         );
         setImageForm(mapImageToForm(created));
+        setPendingImageTagIDs([]);
       }
     } finally {
       setIsSavingImage(false);
@@ -481,6 +504,53 @@ export default function ManagePage() {
                   />
                 </label>
 
+                {!imageForm.id ? (
+                  <div className="md:col-span-2 rounded-[1.5rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.26em] text-stone-500">
+                          Attach Tags On Create
+                        </p>
+                        <p className="mt-2 text-sm text-stone-600">
+                          Pick tags to add right after the image is created.
+                        </p>
+                      </div>
+                      <p className="text-sm text-stone-500">
+                        {pendingImageTagIDs.length > 0
+                          ? `${pendingImageTagIDs.length} tag(s) selected.`
+                          : 'No tags selected yet.'}
+                      </p>
+                    </div>
+
+                    {tags.length > 0 ? (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {tags.map((tag) => {
+                          const isSelected = pendingImageTagIDs.includes(tag.id);
+
+                          return (
+                            <button
+                              key={tag.id}
+                              type="button"
+                              onClick={() => togglePendingImageTagSelection(tag.id)}
+                              className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${
+                                isSelected
+                                  ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
+                                  : 'border-black/10 bg-white/90 text-stone-700 hover:border-clay/30 hover:text-clay'
+                              }`}
+                            >
+                              #{tag.slug}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-stone-500">
+                        No tags available yet. Create tags first if you want to attach them here.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+
                 <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
                   <button type="submit" className="primary-button w-full sm:w-auto" disabled={isSavingImage}>
                     {isSavingImage ? 'Saving...' : imageForm.id ? 'Update Image' : 'Create Image'}
@@ -599,6 +669,7 @@ export default function ManagePage() {
                                     className={imageForm.id === image.id ? 'edit-button-active' : 'edit-button'}
                                     onClick={() => {
                                       setImageForm(mapImageToForm(image));
+                                      setPendingImageTagIDs([]);
                                       window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
                                   >

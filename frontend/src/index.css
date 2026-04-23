@@ -5,7 +5,7 @@
 @layer base {
   :root {
     color: #1d1d1f;
-    background-color: #f5f5f7;
+    background-color: #ffffff;
     font-family:
       -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue',
       Arial, sans-serif;
@@ -25,9 +25,7 @@
   body {
     margin: 0;
     min-width: 320px;
-    background:
-      radial-gradient(circle at top, rgba(0, 113, 227, 0.12), transparent 28%),
-      linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 42%, #eef2f7 100%);
+    background: #ffffff;
   }
 
   button {
@@ -49,7 +47,7 @@
     border: 1px solid rgba(29, 29, 31, 0.08);
     background: rgba(255, 255, 255, 0.82);
     color: #1d1d1f;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   }
 
   .tag-chip-active {
@@ -63,7 +61,7 @@
     @apply rounded-[2rem] p-5 backdrop-blur-md;
     border: 1px solid rgba(29, 29, 31, 0.06);
     background: rgba(255, 255, 255, 0.86);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
   }
 
   .form-field {
@@ -99,7 +97,7 @@
     @apply inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-ink transition disabled:cursor-not-allowed disabled:opacity-60;
     border: 1px solid rgba(29, 29, 31, 0.08);
     background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.025);
   }
 
   .danger-button {
@@ -177,12 +175,12 @@
     @apply overflow-hidden rounded-[1.9rem] transition duration-300;
     border: 1px solid rgba(29, 29, 31, 0.06);
     background: rgba(255, 255, 255, 0.88);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.035);
   }
 
   .gallery-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 24px 54px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.05);
   }
 }
 

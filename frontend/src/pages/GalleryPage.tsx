@@ -307,10 +307,9 @@ export default function GalleryPage() {
   }, [hasMore, isInitialLoading, isLoadingMore, loadImages, nextCursor]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-paper text-ink">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-grain" />
+    <div className="min-h-screen overflow-x-hidden bg-white text-ink">
 
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-900/10 bg-paper/85 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-900/10 bg-white/95 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:hidden">
           <div className="flex items-start justify-between gap-4">
             <h1 className="min-w-0 max-w-[12rem] font-display text-3xl leading-[0.92] text-ink sm:max-w-[18rem] sm:text-4xl">
