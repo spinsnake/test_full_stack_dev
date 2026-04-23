@@ -46,7 +46,7 @@ function ImageCard({
 
   return (
     <div className="gallery-item">
-      <article className="gallery-card overflow-hidden">
+      <article data-testid={`gallery-card-${image.id}`} className="gallery-card overflow-hidden">
         <div className="relative bg-stone-100" style={{ aspectRatio: ratio }}>
           <img
             src={imageSrc}
@@ -307,7 +307,7 @@ export default function GalleryPage() {
   }, [hasMore, isInitialLoading, isLoadingMore, loadImages, nextCursor]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white text-ink">
+    <div className="gallery-page min-h-screen overflow-x-hidden bg-white text-ink">
 
       <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-900/10 bg-white/95 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:hidden">
@@ -319,7 +319,7 @@ export default function GalleryPage() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((current) => !current)}
-              className="inline-flex size-14 shrink-0 items-center justify-center rounded-full border border-stone-900/10 bg-white/80 text-ink shadow-card transition hover:border-clay/30 hover:text-clay"
+              className="gallery-shadowless inline-flex size-14 shrink-0 items-center justify-center rounded-full border border-stone-900/10 bg-white/80 text-ink shadow-card transition hover:border-clay/30 hover:text-clay"
               aria-label="Toggle gallery menu"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-gallery-menu"
@@ -347,7 +347,7 @@ export default function GalleryPage() {
           {isMobileMenuOpen ? (
             <div
               id="mobile-gallery-menu"
-              className="mt-4 max-h-[calc(100vh-7rem)] space-y-4 overflow-y-auto rounded-[1.75rem] border border-black/5 bg-white/95 p-4 shadow-[0_24px_54px_rgba(0,0,0,0.12)]"
+              className="gallery-shadowless mt-4 max-h-[calc(100vh-7rem)] space-y-4 overflow-y-auto rounded-[1.75rem] border border-black/5 bg-white/95 p-4 shadow-[0_24px_54px_rgba(0,0,0,0.12)]"
             >
               <Link
                 to="/manage"
@@ -496,12 +496,15 @@ export default function GalleryPage() {
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-28 sm:px-6 sm:pt-32 lg:px-8 lg:pt-[14.5rem]">
         {errorMessage ? (
-          <div className="mb-8 rounded-[1.5rem] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+          <div
+            data-testid="gallery-error"
+            className="mb-8 rounded-[1.5rem] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
+          >
             {errorMessage}
           </div>
         ) : null}
 
-        <div ref={gridRef} className="gallery-grid">
+        <div ref={gridRef} className="gallery-grid" data-testid="gallery-grid">
           <div className="gallery-sizer" />
 
           {isInitialLoading
@@ -543,6 +546,7 @@ export default function GalleryPage() {
 
       {isTagModalOpen ? (
         <div
+          data-testid="gallery-tag-modal"
           className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/24 px-4 py-8 backdrop-blur-sm"
           onClick={() => setIsTagModalOpen(false)}
         >

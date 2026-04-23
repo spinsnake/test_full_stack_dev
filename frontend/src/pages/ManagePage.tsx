@@ -410,13 +410,19 @@ export default function ManagePage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {statusMessage ? (
-          <div className="mb-6 rounded-[1.25rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
+          <div
+            data-testid="manage-status"
+            className="mb-6 rounded-[1.25rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700"
+          >
             {statusMessage}
           </div>
         ) : null}
 
         {errorMessage ? (
-          <div className="mb-6 rounded-[1.25rem] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+          <div
+            data-testid="manage-error"
+            className="mb-6 rounded-[1.25rem] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
+          >
             {errorMessage}
           </div>
         ) : null}
@@ -427,7 +433,7 @@ export default function ManagePage() {
           </div>
         ) : (
           <div className="grid items-start gap-6 xl:grid-cols-[1.15fr,0.85fr]">
-            <section className="panel-card min-w-0 p-4 sm:p-6">
+            <section data-testid="image-editor-section" className="panel-card min-w-0 p-4 sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Images</p>
@@ -438,7 +444,11 @@ export default function ManagePage() {
                 </button>
               </div>
 
-              <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handleSaveImage}>
+              <form
+                data-testid="image-form"
+                className="mt-6 grid gap-4 md:grid-cols-2"
+                onSubmit={handleSaveImage}
+              >
                 <label className="form-field md:col-span-2">
                   <span className="field-label">Image URL</span>
                   <input
@@ -505,7 +515,10 @@ export default function ManagePage() {
                 </label>
 
                 {!imageForm.id ? (
-                  <div className="md:col-span-2 rounded-[1.5rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm">
+                  <div
+                    data-testid="create-image-tag-picker"
+                    className="md:col-span-2 rounded-[1.5rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm"
+                  >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.26em] text-stone-500">
@@ -623,7 +636,10 @@ export default function ManagePage() {
                   </div>
                 ) : null}
 
-                <div className="min-w-0 rounded-[1.75rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm">
+                <div
+                  data-testid="image-catalog"
+                  className="min-w-0 rounded-[1.75rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm"
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-[11px] uppercase tracking-[0.26em] text-stone-500">Catalog</p>
@@ -635,6 +651,7 @@ export default function ManagePage() {
                     {images.map((image) => (
                       <article
                         key={image.id}
+                        data-testid={`image-catalog-item-${image.id}`}
                         className={`rounded-[1.5rem] border p-4 transition ${
                           imageForm.id === image.id
                             ? 'border-sky-200/80 bg-sky-50/85 text-ink shadow-card'
@@ -711,7 +728,7 @@ export default function ManagePage() {
               </div>
             </section>
 
-            <section className="panel-card min-w-0 p-4 sm:p-6">
+            <section data-testid="tag-editor-section" className="panel-card min-w-0 p-4 sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Tags</p>
@@ -722,7 +739,7 @@ export default function ManagePage() {
                 </button>
               </div>
 
-              <form className="mt-6 grid gap-4" onSubmit={handleSaveTag}>
+              <form data-testid="tag-form" className="mt-6 grid gap-4" onSubmit={handleSaveTag}>
                 <label className="form-field">
                   <span className="field-label">Tag Name</span>
                   <input
@@ -765,7 +782,10 @@ export default function ManagePage() {
                 </div>
               </form>
 
-              <div className="mt-8 rounded-[1.75rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm">
+              <div
+                data-testid="tag-catalog"
+                className="mt-8 rounded-[1.75rem] border border-black/5 bg-white/72 p-4 backdrop-blur-sm"
+              >
                 <p className="text-[11px] uppercase tracking-[0.26em] text-stone-500">Catalog</p>
                 <h3 className="mt-2 text-lg font-bold text-ink">{tags.length} active tags</h3>
 
@@ -773,6 +793,7 @@ export default function ManagePage() {
                   {tags.map((tag) => (
                     <article
                       key={tag.id}
+                      data-testid={`tag-catalog-item-${tag.id}`}
                       className={`rounded-[1.5rem] border p-4 transition ${
                         tagForm.id === tag.id
                           ? 'border-sky-200/80 bg-sky-50/85 text-ink shadow-card'
@@ -815,6 +836,7 @@ export default function ManagePage() {
 
       {tagPickerImage ? (
         <div
+          data-testid="tag-picker-modal"
           className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/24 px-4 py-8 backdrop-blur-sm"
           onClick={closeTagPicker}
         >

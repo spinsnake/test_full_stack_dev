@@ -182,6 +182,17 @@
     transform: translateY(-4px);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.05);
   }
+
+  .gallery-page .gallery-card,
+  .gallery-page .gallery-card:hover,
+  .gallery-page .panel-card,
+  .gallery-page .secondary-button,
+  .gallery-page .tag-chip,
+  .gallery-page .tag-chip-active,
+  .gallery-page .gallery-shadowless,
+  .gallery-page .gallery-shadowless:hover {
+    box-shadow: none !important;
+  }
 }
 
 @media (min-width: 640px) {
