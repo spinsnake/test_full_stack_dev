@@ -159,7 +159,7 @@ func buildMySQLDSN() string {
 	host := getEnvAny([]string{"MYSQL_HOST", "MYSQLHOST"}, "127.0.0.1")
 	port := getEnvAny([]string{"MYSQL_PORT", "MYSQLPORT"}, "3306")
 	database := getEnvAny([]string{"MYSQL_DATABASE", "MYSQLDATABASE"}, "gallery_db")
-	params := strings.TrimPrefix(getEnv("MYSQL_PARAMS", "parseTime=true&loc=Local&charset=utf8mb4"), "?")
+	params := strings.TrimPrefix(getEnv("MYSQL_PARAMS", "parseTime=true&loc=Local&charset=utf8mb4&multiStatements=true"), "?")
 
 	if password == "" {
 		return ""
@@ -285,5 +285,8 @@ func applyDefaultMySQLParams(params url.Values) {
 	}
 	if !params.Has("charset") {
 		params.Set("charset", "utf8mb4")
+	}
+	if !params.Has("multiStatements") {
+		params.Set("multiStatements", "true")
 	}
 }

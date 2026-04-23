@@ -47,7 +47,7 @@ func RunMigrations(db *sql.DB, migrationDir string, includeMockData bool) error 
 		return fmt.Errorf("create migration runner: %w", err)
 	}
 
-	if err := runner.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+	if err := upWithDirtyRecovery(runner); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("apply migrations: %w", err)
 	}
 
@@ -58,6 +58,29 @@ func RunMigrations(db *sql.DB, migrationDir string, includeMockData bool) error 
 	}
 
 	return nil
+}
+
+func upWithDirtyRecovery(runner *migrate.Migrate) error {
+	err := runner.Up()
+	if err == nil || errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	var dirty migrate.ErrDirty
+	if !errors.As(err, &dirty) {
+		return err
+	}
+
+	forceVersion := dirty.Version - 1
+	if forceVersion < 0 {
+		forceVersion = 0
+	}
+
+	if forceErr := runner.Force(forceVersion); forceErr != nil {
+		return fmt.Errorf("force dirty migration version %d: %w", forceVersion, forceErr)
+	}
+
+	return runner.Up()
 }
 
 func prepareSchemaMigrationDir(sourceDir string) (string, func(), error) {

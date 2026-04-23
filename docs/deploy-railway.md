@@ -56,6 +56,7 @@ Notes:
 
 - The app now accepts `DATABASE_URL` and Railway-style MySQL variables.
 - The app also accepts Railway's `PORT` automatically, so you do not need to hardcode a deploy port.
+- The MySQL connection now enables `multiStatements=true`, which is required for the schema migration file in this repo.
 - `MOCKDATA=true` runs `000002_seed_demo_data.up.sql` once after schema migrations.
 - `MOCKDATA=false` applies schema migrations only.
 - `AUTO_MIGRATE=true` runs migrations automatically when the API container starts.
