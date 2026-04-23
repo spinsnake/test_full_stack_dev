@@ -2,21 +2,16 @@ package infra
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/golang-migrate/migrate/v4"
-	mysqlmigrate "github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 const (
-	demoSeedUpFile   = "000002_seed_demo_data.up.sql"
-	demoSeedDownFile = "000002_seed_demo_data.down.sql"
-	demoSeedMarker   = "seed:placehold.co"
+	schemaUpFile   = "000001_create_gallery_tables.up.sql"
+	demoSeedUpFile = "000002_seed_demo_data.up.sql"
+	demoSeedMarker = "seed:placehold.co"
 )
 
 var defaultMigrationDirs = []string{
@@ -31,24 +26,8 @@ func RunMigrations(db *sql.DB, migrationDir string, includeMockData bool) error 
 		return err
 	}
 
-	schemaDir, cleanup, err := prepareSchemaMigrationDir(resolvedDir)
-	if err != nil {
-		return err
-	}
-	defer cleanup()
-
-	driver, err := mysqlmigrate.WithInstance(db, &mysqlmigrate.Config{})
-	if err != nil {
-		return fmt.Errorf("create mysql migration driver: %w", err)
-	}
-
-	runner, err := migrate.NewWithDatabaseInstance(fileSourceURI(schemaDir), "mysql", driver)
-	if err != nil {
-		return fmt.Errorf("create migration runner: %w", err)
-	}
-
-	if err := upWithDirtyRecovery(runner); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return fmt.Errorf("apply migrations: %w", err)
+	if err := applySQLFile(db, filepath.Join(resolvedDir, schemaUpFile)); err != nil {
+		return fmt.Errorf("apply schema file: %w", err)
 	}
 
 	if includeMockData {
@@ -58,76 +37,6 @@ func RunMigrations(db *sql.DB, migrationDir string, includeMockData bool) error 
 	}
 
 	return nil
-}
-
-func upWithDirtyRecovery(runner *migrate.Migrate) error {
-	err := runner.Up()
-	if err == nil || errors.Is(err, migrate.ErrNoChange) {
-		return err
-	}
-
-	var dirty migrate.ErrDirty
-	if !errors.As(err, &dirty) {
-		return err
-	}
-
-	forceVersion := dirty.Version - 1
-	if forceVersion < 0 {
-		forceVersion = 0
-	}
-
-	if forceErr := runner.Force(forceVersion); forceErr != nil {
-		return fmt.Errorf("force dirty migration version %d: %w", forceVersion, forceErr)
-	}
-
-	return runner.Up()
-}
-
-func prepareSchemaMigrationDir(sourceDir string) (string, func(), error) {
-	tempDir, err := os.MkdirTemp("", "gallery-schema-migrations-*")
-	if err != nil {
-		return "", nil, fmt.Errorf("create temp migration dir: %w", err)
-	}
-
-	cleanup := func() {
-		_ = os.RemoveAll(tempDir)
-	}
-
-	entries, err := os.ReadDir(sourceDir)
-	if err != nil {
-		cleanup()
-		return "", nil, fmt.Errorf("read migration dir: %w", err)
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-
-		sourcePath := filepath.Join(sourceDir, entry.Name())
-		targetPath := filepath.Join(tempDir, entry.Name())
-
-		if isDemoSeedMigration(entry.Name()) {
-			if err := os.WriteFile(targetPath, []byte("SELECT 1;\n"), 0o644); err != nil {
-				cleanup()
-				return "", nil, fmt.Errorf("write stub migration %s: %w", entry.Name(), err)
-			}
-			continue
-		}
-
-		content, err := os.ReadFile(sourcePath)
-		if err != nil {
-			cleanup()
-			return "", nil, fmt.Errorf("read migration file %s: %w", entry.Name(), err)
-		}
-
-		if err := os.WriteFile(targetPath, content, 0o644); err != nil {
-			cleanup()
-			return "", nil, fmt.Errorf("copy migration file %s: %w", entry.Name(), err)
-		}
-	}
-
-	return tempDir, cleanup, nil
 }
 
 func ensureDemoSeedData(db *sql.DB, migrationDir string) error {
@@ -140,12 +49,7 @@ func ensureDemoSeedData(db *sql.DB, migrationDir string) error {
 	}
 
 	seedPath := filepath.Join(migrationDir, demoSeedUpFile)
-	body, err := os.ReadFile(seedPath)
-	if err != nil {
-		return fmt.Errorf("read demo seed file: %w", err)
-	}
-
-	if err := execSQLStatements(db, string(body)); err != nil {
+	if err := applySQLFile(db, seedPath); err != nil {
 		return fmt.Errorf("apply demo seed file: %w", err)
 	}
 
@@ -170,21 +74,30 @@ func hasDemoSeedData(db *sql.DB) (bool, error) {
 	return exists, nil
 }
 
+func applySQLFile(db *sql.DB, path string) error {
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read sql file %s: %w", filepath.Base(path), err)
+	}
+
+	return execSQLStatements(db, string(body))
+}
+
 func execSQLStatements(db *sql.DB, script string) error {
 	tx, err := db.Begin()
 	if err != nil {
-		return fmt.Errorf("begin seed transaction: %w", err)
+		return fmt.Errorf("begin sql transaction: %w", err)
 	}
 
 	for _, statement := range splitSQLStatements(script) {
 		if _, err := tx.Exec(statement); err != nil {
 			_ = tx.Rollback()
-			return fmt.Errorf("exec seed statement: %w", err)
+			return fmt.Errorf("exec sql statement: %w", err)
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit seed transaction: %w", err)
+		return fmt.Errorf("commit sql transaction: %w", err)
 	}
 
 	return nil
@@ -221,10 +134,6 @@ func splitSQLStatements(script string) []string {
 	return statements
 }
 
-func isDemoSeedMigration(name string) bool {
-	return name == demoSeedUpFile || name == demoSeedDownFile
-}
-
 func resolveMigrationDir(custom string) (string, error) {
 	candidates := defaultMigrationDirs
 	if strings.TrimSpace(custom) != "" {
@@ -246,13 +155,4 @@ func resolveMigrationDir(custom string) (string, error) {
 	}
 
 	return "", fmt.Errorf("migration directory not found")
-}
-
-func fileSourceURI(path string) string {
-	normalized := filepath.ToSlash(path)
-	if !strings.HasPrefix(normalized, "/") {
-		normalized = "/" + normalized
-	}
-
-	return "file://" + normalized
 }
