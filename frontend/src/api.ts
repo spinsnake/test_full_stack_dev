@@ -52,7 +52,7 @@ function buildImagesURL({ cursor, limit, tag }: FetchImagesOptions) {
     url.searchParams.set('tag', tag);
   }
 
-  return `${url.pathname}${url.search}`;
+  return url.toString();
 }
 
 export async function fetchTags(): Promise<Tag[]> {
