@@ -148,6 +148,7 @@ npm run build
 ## Notes
 
 - `docs/stack.md` contains the proposed production setup, including server sizing, Ubuntu, Nginx, Docker Compose, and GitHub Actions.
+- `docs/deploy-railway.md` contains a Railway deployment guide for `frontend`, `backend`, and `mysql`.
 - Dockerfiles, Docker Compose, and Nginx config are included in the repository.
 - GitHub Actions workflow files are not included yet.
 - `frontend/README.md` and `backend/README.md` contain app-specific details.

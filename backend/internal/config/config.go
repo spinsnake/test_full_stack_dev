@@ -3,6 +3,7 @@ package config
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -37,7 +38,7 @@ func Load() (Config, error) {
 	cfg := Config{
 		AppName:              getEnv("APP_NAME", "image-gallery-api"),
 		AppHost:              getEnv("APP_HOST", "0.0.0.0"),
-		AppPort:              getEnv("APP_PORT", "8080"),
+		AppPort:              getEnvAny([]string{"APP_PORT", "PORT"}, "8080"),
 		APIPrefix:            getEnv("API_PREFIX", "/api"),
 		ReadTimeout:          time.Duration(getEnvInt("READ_TIMEOUT_SEC", 15)) * time.Second,
 		WriteTimeout:         time.Duration(getEnvInt("WRITE_TIMEOUT_SEC", 15)) * time.Second,
@@ -54,9 +55,9 @@ func Load() (Config, error) {
 		DBConnMaxIdleTime:    time.Duration(getEnvInt("DB_CONN_MAX_IDLE_TIME_MIN", 10)) * time.Minute,
 	}
 
-	dsn := strings.TrimSpace(os.Getenv("DATABASE_DSN"))
-	if dsn == "" {
-		dsn = buildMySQLDSN()
+	dsn, err := loadDatabaseDSN()
+	if err != nil {
+		return Config{}, err
 	}
 	if dsn == "" {
 		return Config{}, fmt.Errorf("database dsn is empty")
@@ -70,12 +71,63 @@ func (c Config) Address() string {
 	return fmt.Sprintf("%s:%s", c.AppHost, c.AppPort)
 }
 
+func loadDatabaseDSN() (string, error) {
+	raw := strings.TrimSpace(getEnvAny([]string{"DATABASE_DSN", "DATABASE_URL", "MYSQL_URL"}, ""))
+	if raw != "" {
+		return normalizeDatabaseDSN(raw)
+	}
+
+	return buildMySQLDSN(), nil
+}
+
+func normalizeDatabaseDSN(raw string) (string, error) {
+	if !strings.HasPrefix(raw, "mysql://") {
+		return raw, nil
+	}
+
+	parsed, err := url.Parse(raw)
+	if err != nil {
+		return "", fmt.Errorf("parse mysql url: %w", err)
+	}
+
+	user := "root"
+	password := ""
+	if parsed.User != nil {
+		user = parsed.User.Username()
+		password, _ = parsed.User.Password()
+	}
+
+	host := parsed.Hostname()
+	if host == "" {
+		host = "127.0.0.1"
+	}
+
+	port := parsed.Port()
+	if port == "" {
+		port = "3306"
+	}
+
+	database := strings.TrimPrefix(parsed.Path, "/")
+	params := parsed.Query()
+	applyDefaultMySQLParams(params)
+
+	return fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?%s",
+		user,
+		password,
+		host,
+		port,
+		database,
+		params.Encode(),
+	), nil
+}
+
 func buildMySQLDSN() string {
-	user := getEnv("MYSQL_USER", "root")
-	password := getEnv("MYSQL_PASSWORD", "")
-	host := getEnv("MYSQL_HOST", "127.0.0.1")
-	port := getEnv("MYSQL_PORT", "3306")
-	database := getEnv("MYSQL_DATABASE", "gallery_db")
+	user := getEnvAny([]string{"MYSQL_USER", "MYSQLUSER"}, "root")
+	password := getEnvAny([]string{"MYSQL_PASSWORD", "MYSQLPASSWORD"}, "")
+	host := getEnvAny([]string{"MYSQL_HOST", "MYSQLHOST"}, "127.0.0.1")
+	port := getEnvAny([]string{"MYSQL_PORT", "MYSQLPORT"}, "3306")
+	database := getEnvAny([]string{"MYSQL_DATABASE", "MYSQLDATABASE"}, "gallery_db")
 	params := strings.TrimPrefix(getEnv("MYSQL_PARAMS", "parseTime=true&loc=Local&charset=utf8mb4"), "?")
 
 	if password == "" {
@@ -136,6 +188,17 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
+func getEnvAny(keys []string, fallback string) string {
+	for _, key := range keys {
+		value := strings.TrimSpace(os.Getenv(key))
+		if value != "" {
+			return value
+		}
+	}
+
+	return fallback
+}
+
 func getEnvInt(key string, fallback int) int {
 	raw := strings.TrimSpace(os.Getenv(key))
 	if raw == "" {
@@ -162,4 +225,16 @@ func getEnvBool(key string, fallback bool) bool {
 	}
 
 	return value
+}
+
+func applyDefaultMySQLParams(params url.Values) {
+	if !params.Has("parseTime") {
+		params.Set("parseTime", "true")
+	}
+	if !params.Has("loc") {
+		params.Set("loc", "Local")
+	}
+	if !params.Has("charset") {
+		params.Set("charset", "utf8mb4")
+	}
 }

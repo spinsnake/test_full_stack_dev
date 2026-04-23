@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -22,6 +23,23 @@ func main() {
 		log.Fatalf("open database: %v", err)
 	}
 	defer db.Close()
+
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+		migrateAction := "up"
+		if len(os.Args) > 2 {
+			migrateAction = os.Args[2]
+		}
+		if migrateAction != "up" {
+			log.Fatalf("unsupported migrate action: %s", migrateAction)
+		}
+
+		if err := infra.RunMigrations(db, ""); err != nil {
+			log.Fatalf("run migrations: %v", err)
+		}
+
+		log.Print("migrations applied")
+		return
+	}
 
 	app := fiber.New(fiber.Config{
 		AppName:      cfg.AppName,
