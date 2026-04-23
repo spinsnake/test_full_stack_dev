@@ -41,6 +41,13 @@ func main() {
 		return
 	}
 
+	if cfg.AutoMigrate {
+		if err := infra.RunMigrations(db, "", cfg.MockData); err != nil {
+			log.Fatalf("auto migrate: %v", err)
+		}
+		log.Print("auto migrations applied")
+	}
+
 	app := fiber.New(fiber.Config{
 		AppName:      cfg.AppName,
 		ReadTimeout:  cfg.ReadTimeout,

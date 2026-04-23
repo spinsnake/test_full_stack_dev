@@ -45,6 +45,7 @@ Set these in the backend service:
 - `DEFAULT_PAGE_LIMIT=12`
 - `MAX_PAGE_LIMIT=60`
 - `MOCKDATA=true`
+- `AUTO_MIGRATE=true`
 - `DB_MAX_OPEN_CONNS=25`
 - `DB_MAX_IDLE_CONNS=25`
 - `DB_CONN_MAX_LIFETIME_MIN=30`
@@ -57,15 +58,21 @@ Notes:
 - The app also accepts Railway's `PORT` automatically, so you do not need to hardcode a deploy port.
 - `MOCKDATA=true` runs `000002_seed_demo_data.up.sql` once after schema migrations.
 - `MOCKDATA=false` applies schema migrations only.
+- `AUTO_MIGRATE=true` runs migrations automatically when the API container starts.
 
 ### Backend Deploy Settings
 
 Under `Deploy`:
 
 - Start command: leave default from Docker image
-- Pre-deploy command: `./api migrate up`
+- Pre-deploy command: optional
 
-That pre-deploy command runs all SQL migrations before the API goes live.
+Recommended Railway setup:
+
+- `AUTO_MIGRATE=true`
+- leave `Pre-deploy command` empty unless you specifically want a separate migration step
+
+With `AUTO_MIGRATE=true`, the backend applies schema migrations on startup and optionally seeds demo data when `MOCKDATA=true`.
 
 ### Backend Networking
 

@@ -26,6 +26,7 @@ type Config struct {
 	DefaultPageLimit     int
 	MaxPageLimit         int
 	MockData             bool
+	AutoMigrate          bool
 	DatabaseDSN          string
 	DBMaxOpenConns       int
 	DBMaxIdleConns       int
@@ -51,6 +52,7 @@ func Load() (Config, error) {
 		DefaultPageLimit:     getEnvInt("DEFAULT_PAGE_LIMIT", 12),
 		MaxPageLimit:         getEnvInt("MAX_PAGE_LIMIT", 60),
 		MockData:             getEnvAnyBool([]string{"MOCKDATA", "MOCK_DATA"}, false),
+		AutoMigrate:          getEnvAnyBool([]string{"AUTO_MIGRATE", "RUN_MIGRATIONS_ON_START"}, false),
 		DBMaxOpenConns:       getEnvInt("DB_MAX_OPEN_CONNS", 25),
 		DBMaxIdleConns:       getEnvInt("DB_MAX_IDLE_CONNS", 25),
 		DBConnMaxLifetime:    time.Duration(getEnvInt("DB_CONN_MAX_LIFETIME_MIN", 30)) * time.Minute,
