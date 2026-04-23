@@ -3,6 +3,7 @@ module github.com/example/test-full-stack-developer/backend
 go 1.26.0
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofiber/fiber/v2 v2.52.9
 )
