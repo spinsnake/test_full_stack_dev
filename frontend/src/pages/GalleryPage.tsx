@@ -76,11 +76,10 @@ function ImageCard({
                 key={`${image.id}-${tag.id}`}
                 type="button"
                 onClick={() => onTagSelect(tag.slug)}
-                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition ${
-                  selectedTag === tag.slug
+                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition ${selectedTag === tag.slug
                     ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
                     : 'border-black/10 bg-white/92 text-stone-700 hover:border-clay/30 hover:text-clay'
-                }`}
+                  }`}
               >
                 #{tag.slug}
               </button>
@@ -326,19 +325,16 @@ export default function GalleryPage() {
             >
               <span className="relative flex h-5 w-6 flex-col justify-between">
                 <span
-                  className={`block h-0.5 rounded-full bg-current transition ${
-                    isMobileMenuOpen ? 'translate-y-[9px] rotate-45' : ''
-                  }`}
+                  className={`block h-0.5 rounded-full bg-current transition ${isMobileMenuOpen ? 'translate-y-[9px] rotate-45' : ''
+                    }`}
                 />
                 <span
-                  className={`block h-0.5 rounded-full bg-current transition ${
-                    isMobileMenuOpen ? 'opacity-0' : ''
-                  }`}
+                  className={`block h-0.5 rounded-full bg-current transition ${isMobileMenuOpen ? 'opacity-0' : ''
+                    }`}
                 />
                 <span
-                  className={`block h-0.5 rounded-full bg-current transition ${
-                    isMobileMenuOpen ? '-translate-y-[9px] -rotate-45' : ''
-                  }`}
+                  className={`block h-0.5 rounded-full bg-current transition ${isMobileMenuOpen ? '-translate-y-[9px] -rotate-45' : ''
+                    }`}
                 />
               </span>
             </button>
@@ -376,11 +372,10 @@ export default function GalleryPage() {
                         key={option}
                         type="button"
                         onClick={() => setPageSize(option)}
-                        className={`rounded-full px-3 py-2 text-sm font-bold transition ${
-                          pageSize === option
+                        className={`rounded-full px-3 py-2 text-sm font-bold transition ${pageSize === option
                             ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
                             : 'border border-black/10 bg-white/90 text-stone-700 hover:border-clay/30 hover:text-clay'
-                        }`}
+                          }`}
                       >
                         {option}
                       </button>
@@ -404,7 +399,7 @@ export default function GalleryPage() {
                     onClick={handleOpenTagModal}
                     className={`tag-chip ${isTagModalOpen ? 'tag-chip-active' : ''}`}
                   >
-                    All Tags
+                    Tags Filter
                   </button>
                 ) : null}
               </div>
@@ -442,11 +437,10 @@ export default function GalleryPage() {
                         key={option}
                         type="button"
                         onClick={() => setPageSize(option)}
-                        className={`rounded-full px-3 py-2 text-sm font-bold transition ${
-                          pageSize === option
+                        className={`rounded-full px-3 py-2 text-sm font-bold transition ${pageSize === option
                             ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
                             : 'border border-black/10 bg-white/90 text-stone-700 hover:border-clay/30 hover:text-clay'
-                        }`}
+                          }`}
                       >
                         {option}
                       </button>
@@ -557,7 +551,7 @@ export default function GalleryPage() {
             <div className="flex items-start justify-between gap-4 border-b border-stone-900/10 px-4 py-4 sm:px-6 sm:py-5">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Tag Directory</p>
-                <h2 className="mt-2 font-display text-3xl leading-none text-ink sm:text-4xl">All Tags</h2>
+                <h2 className="mt-2 font-display text-3xl leading-none text-ink sm:text-4xl">Tags Filter</h2>
                 <p className="mt-2 text-sm text-stone-600">Pick any tag to filter the gallery feed.</p>
               </div>
               <button
@@ -587,11 +581,10 @@ export default function GalleryPage() {
                     key={tag.id}
                     type="button"
                     onClick={() => handleSelectTag(tag.slug)}
-                    className={`rounded-[1.5rem] border px-4 py-4 text-left transition ${
-                      selectedTag === tag.slug
+                    className={`rounded-[1.5rem] border px-4 py-4 text-left transition ${selectedTag === tag.slug
                         ? 'border-transparent bg-clay text-white shadow-[0_16px_32px_rgba(0,113,227,0.2)]'
                         : 'border-black/5 bg-white/80 text-stone-800 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay'
-                    }`}
+                      }`}
                   >
                     <p className="text-[11px] uppercase tracking-[0.26em] opacity-70">Keyword</p>
                     <p className="mt-3 font-display text-3xl leading-none">#{tag.slug}</p>

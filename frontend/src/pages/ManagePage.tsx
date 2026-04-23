@@ -545,11 +545,10 @@ export default function ManagePage() {
                               key={tag.id}
                               type="button"
                               onClick={() => togglePendingImageTagSelection(tag.id)}
-                              className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${
-                                isSelected
+                              className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${isSelected
                                   ? 'border-transparent bg-clay text-white shadow-[0_10px_24px_rgba(0,113,227,0.22)]'
                                   : 'border-black/10 bg-white/90 text-stone-700 hover:border-clay/30 hover:text-clay'
-                              }`}
+                                }`}
                             >
                               #{tag.slug}
                             </button>
@@ -652,11 +651,10 @@ export default function ManagePage() {
                       <article
                         key={image.id}
                         data-testid={`image-catalog-item-${image.id}`}
-                        className={`rounded-[1.5rem] border p-4 transition ${
-                          imageForm.id === image.id
+                        className={`rounded-[1.5rem] border p-4 transition ${imageForm.id === image.id
                             ? 'border-sky-200/80 bg-sky-50/85 text-ink shadow-card'
                             : 'border-black/5 bg-white/88 text-ink hover:-translate-y-0.5 hover:border-clay/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex flex-col gap-4">
                           <div className="flex items-start gap-4">
@@ -794,11 +792,10 @@ export default function ManagePage() {
                     <article
                       key={tag.id}
                       data-testid={`tag-catalog-item-${tag.id}`}
-                      className={`rounded-[1.5rem] border p-4 transition ${
-                        tagForm.id === tag.id
+                      className={`rounded-[1.5rem] border p-4 transition ${tagForm.id === tag.id
                           ? 'border-sky-200/80 bg-sky-50/85 text-ink shadow-card'
                           : 'border-black/5 bg-white/88 text-ink hover:-translate-y-0.5 hover:border-clay/30'
-                      }`}
+                        }`}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
@@ -875,11 +872,10 @@ export default function ManagePage() {
                         key={tag.id}
                         type="button"
                         onClick={() => toggleTagPickerSelection(tag.id)}
-                        className={`rounded-full border px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] transition ${
-                          isSelected
+                        className={`rounded-full border px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] transition ${isSelected
                             ? 'border-transparent bg-clay text-white shadow-[0_16px_32px_rgba(0,113,227,0.2)]'
                             : 'border-black/5 bg-white/88 text-stone-700 hover:-translate-y-0.5 hover:border-clay/30 hover:text-clay'
-                        }`}
+                          }`}
                       >
                         #{tag.slug}
                       </button>
