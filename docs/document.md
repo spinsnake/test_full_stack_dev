@@ -1,5 +1,3 @@
-# Production Architecture Topology
-
 ## Production Architecture Topology
 
 ใน production ระบบจะถูกแยกออกเป็น 3 ส่วนหลัก คือ frontend, backend และ database โดยกำหนดให้มีเฉพาะ service ที่จำเป็นเท่านั้นที่เปิดให้เข้าถึงจากภายนอก เพื่อเพิ่มความปลอดภัยและลดพื้นที่เสี่ยงของระบบ
@@ -75,10 +73,6 @@ Swagger UI : ควรเปิดเฉพาะ environment สำหรับ
 
 Database : Private only
 
-![image3.png](document-assets/image3.png)
-
-Traffic Flow
-
 # Database
 
 Database Schema
@@ -126,13 +120,9 @@ Database Schema
 | version | BIGINT NOT NULL | หมายเลข version ของ migration ล่าสุดที่ถูก apply กับฐานข้อมูล ใช้บอกว่าตอนนี้ schema อยู่ที่ขั้นไหน |
 | dirty | BOOLEAN NOT NULL | ใช้บอกว่าการ migrate ล่าสุดสมบูรณ์หรือไม่ ถ้าเป็น true แปลว่า migration ค้างหรือพังกลางทาง ถ้าเป็น false แปลว่า migration ล่าสุดเสร็จสมบูรณ์ |
 
-![image1.png](document-assets/image1.png)
-
 ภาพแสดงส่วน database schema
 
 โฟลเดอร์ที่เก็บโครงสร้างแต่ละ tables จะอยู่ในโฟล์เดอร์ backend/migration/
-
-![image2.png](document-assets/image2.png)
 
 Database Migration
 
@@ -570,23 +560,57 @@ backend service
 mysql service
 
 OS / Software Version
-สำหรับ production stack แนะนำดังนี้
+สำหรับระบบปัจจุบันใน repo นี้ หาก deploy บน Railway จะเป็นลักษณะ platform-managed environment โดย service หลักยังคงอ้างอิง version จาก Docker image และ application runtime ที่ใช้อยู่จริงในโปรเจค
 
-OS: Ubuntu Server 22.04 LTS
+Host OS
 
-Frontend Runtime: Nginx 1.24+
+กรณี deploy บน Railway จะไม่ได้ pin host OS เองภายใน repo เพราะเป็น platform-managed environment
 
-Backend Runtime: Go 1.24+
+Frontend Runtime
 
-Database: MySQL 8.0
+ใช้ `nginx:1.27-alpine`
 
-Container Runtime: Docker Engine 24+
+Backend Build Runtime
 
-Container Orchestration (lightweight): Docker Compose v2
+ใช้ `golang:1.26-alpine`
 
-CI/CD: GitHub Actions
+Backend Runtime
 
-TLS / HTTPS: ใช้ managed TLS ของ platform หรือ reverse proxy ที่รองรับ HTTPS
+ใช้ `alpine:3.21`
+
+Database
+
+local compose ใช้ `mysql:8.4`
+
+cloud environment ใช้ Railway MySQL service
+
+Application Versions
+
+Frontend ใช้ `React 18.3.1`, `Vite 5.4.21`, `TypeScript 5.6.3`
+
+Backend ใช้ `Go 1.26`, `Fiber v2.52.9`
+
+Database model อ้างอิง `MySQL 8.4`
+
+Container Runtime
+
+ใช้ `Docker` และ `Dockerfile` สำหรับ build image
+
+Local Orchestration
+
+ใช้ `Docker Compose`
+
+Cloud Deployment
+
+ใช้ `Railway` โดยแยก service เป็น `frontend`, `backend`, `mysql`
+
+CI/CD
+
+ปัจจุบันใน repo ยังไม่มี `GitHub Actions` workflow และ deployment ใช้วิธี `Git push -> Railway auto deploy`
+
+TLS / HTTPS
+
+ใช้ HTTPS จาก public domain ที่ platform จัดการให้ หรือ reverse proxy / managed TLS ของ environment ที่ deploy
 
 แนวทางการรองรับ Load
 สำหรับระบบ image gallery ลักษณะนี้ ภาระโหลดหลักจะอยู่ที่
