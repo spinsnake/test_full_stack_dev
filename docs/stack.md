@@ -1,35 +1,57 @@
-# Tech Stack for Full-Stack Developer Test
+# Current Production Stack
 
-เอกสารนี้สรุปชุดเทคโนโลยีที่เลือกใช้สำหรับโจทย์ทดสอบ `Single-Page Application` ประเภท `image gallery` ที่มี `infinite scroll`, `hashtag filter` และแนวทาง deploy แบบ production
+เอกสารนี้สรุปสถาปัตยกรรมและเทคโนโลยีที่ใช้อยู่ใน repo ปัจจุบันสำหรับระบบ `image gallery` แบบ `SPA` ที่มี `infinite scroll`, `tag filter`, หน้า `manage`, backend API และ MySQL
 
 ## Goal
 
-- พัฒนา `SPA` ที่แสดงรูปภาพพร้อม hashtag
+- พัฒนา `SPA` สำหรับแสดงรูปภาพและจัดการรูปภาพในระบบ
 - รองรับ `infinite scroll`
-- กด hashtag เพื่อกรองรูปภาพได้
-- ออกแบบระบบให้สามารถ deploy ใช้งานจริงได้
+- รองรับการกรองข้อมูลด้วย `tag`
+- รองรับการจัดการข้อมูลผ่านหน้า `/manage`
+- รองรับการ deploy แบบแยก `frontend`, `backend`, `database`
 
-## Selected Stack
+## Current Stack
 
-- Frontend: `React`, `Vite`, `TypeScript`, `Tailwind CSS`
-- Backend: `Go`, `Fiber`
-- Database: `MySQL 8`
-- Reverse Proxy / Static Server: `Nginx`
-- Containerization: `Docker`, `Docker Compose`
-- CI/CD: `GitHub Actions`
-- Deployment OS: `Ubuntu Server 22.04 LTS`
-- Demo image source: `placehold.co`
+- Frontend:
+  - `React 18.3.1`
+  - `Vite 5.4.21`
+  - `TypeScript 5.6.3`
+  - `Tailwind CSS 3.4.15`
+  - `react-router-dom 6.28.x`
+  - `masonry-layout 4.2.2`
+  - `imagesloaded 5.0.0`
+- Backend:
+  - `Go 1.26`
+  - `Fiber v2.52.9`
+  - `go-sql-driver/mysql 1.9.3`
+- Database:
+  - `MySQL 8.4`
+- Frontend runtime image:
+  - `nginx:1.27-alpine`
+- Backend runtime image:
+  - `alpine:3.21`
+- Backend build image:
+  - `golang:1.26-alpine`
+- Containerization:
+  - `Docker`
+  - `Dockerfile`
+- Local orchestration:
+  - `Docker Compose`
+- Current cloud deployment target:
+  - `Railway`
+- Demo image source:
+  - `placehold.co`
 
 ## Why This Stack
 
-- `React` เหมาะกับงาน `SPA` และจัดการ state ของ gallery/filter ได้ชัดเจน
-- `Vite` ช่วยให้เริ่มโปรเจกต์เร็วและ build เร็ว เหมาะกับงานทดสอบที่มีเวลาจำกัด
-- `TypeScript` ลดความผิดพลาดของ data shape ระหว่าง frontend และ backend
-- `Go Fiber` ตรงกับทักษะ `Golang` ในตำแหน่งงาน และเหมาะกับการทำ API ที่เรียบง่ายและเร็ว
-- `MySQL` ตรงกับ requirement ในเอกสาร และเหมาะกับโครงสร้างข้อมูลแบบ relation ระหว่างรูปกับ tag
-- `Nginx` ใช้ serve ไฟล์ frontend และ reverse proxy ไปยัง backend ได้ง่าย
-- `Docker` และ `GitHub Actions` ทำให้ workflow ดู production-ready และ deploy ซ้ำได้ง่าย
-- `Ubuntu Server` เป็นตัวเลือกมาตรฐานสำหรับ production deployment
+- `React` เหมาะกับงาน `SPA` และจัดการ state ของ gallery / filter / form ได้ชัดเจน
+- `Vite` ใช้ build frontend ได้เร็วและเหมาะกับ workflow ของ React ปัจจุบัน
+- `TypeScript` ช่วยคุม data shape ระหว่าง frontend กับ backend
+- `Go Fiber` เหมาะกับการทำ API ที่เรียบง่าย เร็ว และดูแลง่าย
+- `MySQL` เหมาะกับ relational model ของ `images`, `tags`, `image_tags`
+- `Nginx` เหมาะกับการ serve static frontend ใน production
+- `Docker` ทำให้ build และ deploy ซ้ำได้สม่ำเสมอ
+- `Railway` เหมาะกับ repo นี้เพราะแยก deploy เป็น `frontend`, `backend`, `mysql` ได้ง่ายและเชื่อมกับ GitHub ได้ตรง
 
 ## Application Design
 
@@ -37,13 +59,13 @@
 
 - แสดงรูปแบบ masonry/grid ตามขนาดรูปที่ไม่เท่ากัน
 - โหลดข้อมูลเพิ่มเมื่อ scroll ถึงด้านล่างด้วย `IntersectionObserver`
-- กด hashtag แล้วเรียก API ใหม่ด้วยเงื่อนไข `tag`
-- รองรับ responsive สำหรับ desktop และ mobile
+- กรองข้อมูลด้วย `tag`
+- มีหน้า `/manage` สำหรับจัดการ image, tag และการผูก tag
 
 ### Backend
 
 - พัฒนาเป็น `REST API`
-- แยกส่วน `handler`, `service`, `repository` เพื่อให้โค้ดอ่านง่ายและดูแลต่อได้
+- แยกส่วน `handler`, `service`, `repository`
 - รองรับ query เช่น `limit`, `cursor`, `tag`
 
 ตัวอย่าง endpoint:
@@ -52,6 +74,8 @@
 - `GET /api/images?limit=12`
 - `GET /api/images?cursor=24`
 - `GET /api/images?tag=nature&limit=12`
+- `POST /api/images`
+- `POST /api/tags`
 
 ### Database
 
@@ -65,39 +89,83 @@
 
 - 1 รูปมีได้หลาย tag
 - 1 tag ใช้กับหลายรูปได้
-- ใช้ตาราง `image_tags` เป็น many-to-many relation
+- ใช้ `deleted_at` สำหรับ soft delete
+- ใช้ `image_tags` เป็น many-to-many relation
 
-## Suggested Production Setup
+## Current Production-Like Setup
 
-- Server: `2 vCPU`, `4 GB RAM`, `40 GB SSD`
-- OS: `Ubuntu Server 22.04 LTS`
-- Runtime: `Docker Engine`, `Docker Compose`
-- Web entrypoint: `Nginx`
-- App services:
-  - `frontend`
-  - `backend`
-  - `mysql`
-- CI/CD flow:
-  - push code ไปที่ `GitHub`
-  - `GitHub Actions` run build/test
-  - deploy ไป server ด้วย `docker compose`
+โปรเจคปัจจุบัน deploy แบบแยก service บน `Railway` เป็น 3 ส่วน:
 
-## Deployment Flow
+- `frontend`
+- `backend`
+- `mysql`
 
-1. Build frontend ด้วย `Vite`
-2. Build backend เป็น `Go binary`
-3. สร้าง Docker images สำหรับ frontend และ backend
-4. ใช้ `Nginx` serve frontend และ proxy `/api` ไป backend
-5. ใช้ `docker compose up -d` สำหรับ run production services
+รายละเอียดเชิง runtime ปัจจุบัน:
 
-## Final Recommendation
+- `frontend`
+  - build จาก `frontend/Dockerfile`
+  - frontend ถูก build ด้วย `Vite`
+  - serve ผ่าน `nginx:1.27-alpine`
+  - public entrypoint ของระบบ
+- `backend`
+  - build จาก `backend/Dockerfile`
+  - compile ด้วย `golang:1.26-alpine`
+  - run บน `alpine:3.21`
+  - เปิด API ที่ port `8080`
+- `mysql`
+  - local compose ใช้ `mysql:8.4`
+  - cloud ใช้ Railway MySQL service
 
-หากต้องการ stack ที่บาลานซ์ระหว่างความเร็วในการพัฒนา, ความตรงกับ JD และภาพลักษณ์ production-ready ชุดที่เหมาะที่สุดคือ:
+## OS / Software Version
 
-- `React + Vite + TypeScript`
-- `Go Fiber`
-- `MySQL`
-- `Nginx`
-- `Docker / Docker Compose`
-- `GitHub Actions`
-- `Ubuntu Server`
+ถ้าอธิบายให้ตรงกับระบบปัจจุบันใน repo:
+
+- Host OS:
+  - ในกรณี deploy บน `Railway` เป็น platform-managed environment จึงไม่ได้ pin OS ของ host machine เองใน repo
+- Container OS / Runtime ที่ระบบใช้จริง:
+  - Frontend runtime: `nginx:1.27-alpine`
+  - Backend runtime: `alpine:3.21`
+  - Backend build image: `golang:1.26-alpine`
+  - Database (local/reference): `mysql:8.4`
+- Application software versions:
+  - `React 18.3.1`
+  - `Vite 5.4.21`
+  - `TypeScript 5.6.3`
+  - `Go 1.26`
+  - `Fiber v2.52.9`
+  - `MySQL 8.4`
+  - `Nginx 1.27`
+
+## Current Deployment Flow
+
+ปัจจุบัน flow ที่ตรงกับ repo นี้คือ:
+
+1. push code ไปที่ `GitHub`
+2. Railway ดึง source จาก branch ที่ผูกไว้
+3. Railway build `backend` จาก `backend/Dockerfile`
+4. Railway build `frontend` จาก `frontend/Dockerfile`
+5. backend start พร้อม env เช่น `AUTO_MIGRATE=true` และ `MOCKDATA=true/false`
+6. frontend build ด้วย `VITE_API_BASE_URL=https://<backend-domain>/api`
+7. เปิดใช้งานผ่าน Railway public domains
+
+## CI/CD Status
+
+ปัจจุบันใน repo นี้:
+
+- ยังไม่มี `.github/workflows/`
+- ยังไม่มี `GitHub Actions` workflow ใน repo
+- deployment ปัจจุบันอาศัย `Railway + GitHub integration`
+- เมื่อ push code ไปยัง branch ที่เชื่อมกับ Railway ระบบจะ build และ deploy service ที่เกี่ยวข้องใหม่
+
+ดังนั้นถ้าจะเขียนในรายงานให้ตรงกับ implementation ปัจจุบัน ควรใช้คำว่า:
+
+- `Deployment trigger: Git push -> Railway auto deploy`
+- ไม่ควรระบุว่าใช้ `GitHub Actions` ถ้ายังไม่ได้เพิ่ม workflow จริงใน repo
+
+## Recommended Production Notes
+
+- `frontend` เป็น public service
+- `backend` เป็น public API service ที่ frontend เรียกผ่าน `VITE_API_BASE_URL`
+- `mysql` ควรเป็น private/internal only
+- backend ใช้ `AUTO_MIGRATE=true` ได้ใน environment ที่ต้องการให้ schema ถูก apply ตอน start
+- ใน production จริงควรจำกัดการเข้าถึง `/swagger` เพิ่มเติมหากไม่ต้องการเปิดสาธารณะ
